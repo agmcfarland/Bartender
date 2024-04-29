@@ -2,9 +2,9 @@ import sys
 import argparse
 import os
 from os.path import join as pjoin
-from Bartender.Utils.ReportTable import ReportTable
-from Bartender.Utils.StandardBarcodeName import StandardBarcodeName
-from Bartender.Utils.SetupManager import SetupManager
+from Utils.ReportTable import ReportTable
+from Utils.StandardBarcodeName import StandardBarcodeName
+from Utils.SetupManager import SetupManager
 
 
 def parse_arguments():

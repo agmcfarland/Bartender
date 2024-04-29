@@ -1,0 +1,282 @@
+---
+title: "Stock barcode identification analysis"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+author: "Alexander McFarland"
+output: 
+  html_document:
+    toc: true 
+    toc_depth: 3  
+    number_sections: true 
+    theme: united 
+    highlight: tango  
+params:
+  run_dir: ""
+---
+
+
+# Libraries and directories
+
+This is a processing chunk.
+
+```{r, load_libraries, echo=FALSE, message=FALSE, warning=FALSE}
+options(scipen = 999)
+
+library(optparse)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(tibble)
+library(vegan)
+library(cowplot)
+
+
+### Troubleshooting inputs start
+# params <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_2_0/bartender_output')
+### Troubleshooting inputs end
+
+runs_paths <- data.frame(
+  'base' = params$run_dir,
+  'record' = file.path(params$run_dir, 'record', 'stock.csv'),
+  'filtered_stock' = file.path(params$run_dir, 'stock', 'stock_barcodes_filtered.csv'),
+  'raw_stock' = file.path(params$run_dir, 'stock', 'stock_barcodes_raw.csv')
+)
+
+keep_global_vars <- c(
+  # Values
+  'runs_paths',
+  # Data
+  'df_raw_stock',
+  'df_filtered_stock',
+  'df_stock_record',
+  # Self
+  'keep_global_vars'
+)
+
+list_non_global_variables <- function(all_variables, global_variables_to_keep) {
+  return(setdiff(all_variables, global_variables_to_keep))
+}
+
+internal_functions <- unlist(lapply(lsf.str(), function(x){x[1]}))
+
+keep_global_vars <- c(keep_global_vars, internal_functions)
+
+rm(list = list_non_global_variables(ls(), keep_global_vars))
+```
+<!-- \newpage -->
+
+# Terminology
+
+## Barcode identification and categorization
+
+```{r, overview_figure1, echo=FALSE, fig.cap='Overview of barcode identification, binning, and nomenclature.', out.width = '100%',fig.align="center", warning=FALSE}
+knitr::include_graphics(file.path('/data/bar_lab/small_scale_barcode_analyses/src/Bartender/Figures', 'Slide1.png'))
+```
+
+## Terms to describe barcodes
+
+```{r, overview_figure2, echo=FALSE, fig.cap='Different terms are used to talk about barcodes.', out.width = '50%',fig.align="center", warning=FALSE}
+knitr::include_graphics(file.path('/data/bar_lab/small_scale_barcode_analyses/src/Bartender/Figures', 'Slide2.png'))
+```
+
+```{r, stock_summary1, echo=FALSE, results='asis', warning=FALSE}
+rm(list = list_non_global_variables(ls(), keep_global_vars))
+
+df_filtered_stock <- read.csv(runs_paths$filtered_stock)
+df_raw_stock <- read.csv(runs_paths$raw_stock)
+
+df_raw_stock <- df_raw_stock %>%
+   base::replace(is.na(.), 0) %>%
+   dplyr::mutate(total_barcodes = base::rowSums(dplyr::across(dplyr::where(is.numeric))))
+```
+
+# Filtered and unfiltered barcode diversity and abundance
+
+## Whole run level
+
+```{r, stock_summary2, echo=FALSE, results='asis', warning=FALSE}
+rm(list = list_non_global_variables(ls(), keep_global_vars))
+
+# spaces to denote filtered versus non-passing stock
+df_kable <- data.frame('stocks sampled' = ncol(df_raw_stock) - 2,
+                       'barcode\ndiversity '= length(base::unique(df_filtered_stock$barcode)),
+                       'barcode\nabundance '= sum(df_filtered_stock$total_barcodes),
+                       'mean\nbarcode abundance ' =  sum(df_filtered_stock$total_barcodes)/length(base::unique(df_filtered_stock$barcode)),
+                       'barcode\ndiversity' = length(df_raw_stock$barcode),
+                       'barcode\nabundance' = sum(df_raw_stock$total),
+                       'mean\nbarcode abundance' =  sum(df_raw_stock$total)/length(df_raw_stock$barcode),
+                       check.names = FALSE) %>%
+  mutate_all(scales::comma)
+
+kable(df_kable,
+      'html',
+      booktabs = T, linesep = '', align = 'c', longtable = TRUE)%>%
+  kable_styling(font_size = 15, latex_options= 'scale_down', position='center') %>%
+  add_header_above(header = c(" " = 1, "filtered" = 3, "total" = 3)) %>%
+  column_spec(column = 1:7, width = '0.5cm')
+```
+
+## Per biological group
+
+If multiple viruses are used for stock characterization, they will each show according to their `biological_group`
+
+```{r, stock_summary3_biological_group, echo=FALSE, results='asis', warning=FALSE}
+rm(list = list_non_global_variables(ls(), keep_global_vars))
+
+df_kable <- df_filtered_stock %>%
+  dplyr::group_by(biological_group) %>%
+  dplyr::mutate(stocks_sampled = length(grep(base::unique(biological_group), names(df_raw_stock), value = TRUE))) %>%
+  dplyr::mutate(
+    barcode_diversity = length(base::unique(barcode)),
+    barcode_abundance = sum(total_barcodes),
+    mean_barcode_abundance = barcode_abundance/barcode_diversity) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(biological_group, stocks_sampled, barcode_diversity, barcode_abundance, mean_barcode_abundance) %>%
+  base::unique() %>%
+  dplyr::mutate(
+    barcode_diversity = scales::comma(barcode_diversity),
+    barcode_abundance = scales::comma(barcode_abundance),
+    mean_barcode_abundance = scales::comma(mean_barcode_abundance)
+  ) %>%
+  dplyr::rename(
+    'biological\ngroup' = biological_group,
+    'stocks\nsampled' = stocks_sampled, 
+    'barcode\ndiversity' = barcode_diversity, 
+    'barcode\nabundance' = barcode_abundance, 
+    'mean\nbarcode\nabundance' = mean_barcode_abundance
+    )
+
+
+kable(df_kable,
+      'html',
+      booktabs = T, linesep = '', align = 'c', longtable = TRUE)%>%
+  kable_styling(font_size = 15, latex_options= 'scale_down', position='center') %>%
+  column_spec(column = 1:5, width = '0.5cm')
+```
+
+# Shared barcodes within each biological group
+
+## Cumulative proportion of barcodes found in X number of stocks
+
+```{r, rarefaction_analysis, echo=FALSE, out.width = '100%',fig.align="center", warning=FALSE}
+
+df_stock <- df_filtered_stock %>%
+  dplyr::group_by(biological_group) %>%
+  dplyr::arrange(stocks_with_barcode) %>%
+  dplyr::mutate(
+    barcode_fraction = 1/length(barcode),
+    cumulative_barcode_fraction = cumsum(barcode_fraction))
+
+for (biological_group_ in base::unique(df_stock$biological_group)){
+  
+  df_plot_stock <- df_stock  %>%
+                 dplyr::filter(biological_group == biological_group_) %>%
+                 dplyr::group_by(stocks_with_barcode) %>%
+                 dplyr::filter(cumulative_barcode_fraction == max(cumulative_barcode_fraction)) %>%
+                 dplyr::ungroup()
+  
+  p1 <- ggplot(df_plot_stock,
+               aes(x = stocks_with_barcode, y = cumulative_barcode_fraction)) +
+    # geom_bar(stat = 'identity') +
+    geom_area(alpha = 0.5) +
+    geom_point() +
+    theme_classic() +
+    theme(
+      aspect.ratio = .5,
+      panel.grid.major = element_line(linetype = 'dotted', color = 'grey'),
+      axis.text = element_text(size = 15),
+      axis.title = element_text(size = 15)
+    ) +
+    scale_x_continuous(expand = c(0, 0, 0, 1), limits = c(0, max(df_plot_stock$stocks_with_barcode) + 1), breaks = seq(0, max(df_plot_stock$stocks_with_barcode) + 1, by = 10)) +
+    scale_y_continuous(expand = c(0, 0, 0.1, 0)) +
+    labs(y = 'cumulative proportion\nof unique barcodes', x = 'number of stocks with the same barcode', title = biological_group_)
+  
+  print(p1)
+  }
+
+```
+
+## Proportion of barcodes found in X number of stocks.
+
+```{r, rarefaction_analysis2, echo=FALSE, out.width = '100%',fig.align="center", warning=FALSE}
+
+for (biological_group_ in base::unique(df_stock$biological_group)){
+  
+  df_plot_stock <- df_stock  %>%
+               dplyr::filter(biological_group == biological_group_)
+  
+  p1 <- ggplot(df_plot_stock, aes(x = stocks_with_barcode, y = barcode_fraction)) + 
+    geom_bar(stat = 'identity', position = position_stack(), alpha = 1) +
+    theme_classic() +
+    theme(
+      aspect.ratio = .5,
+      panel.grid.major = element_line(linetype = 'dotted', color = 'grey'),
+      axis.text = element_text(size = 15),
+      axis.title = element_text(size = 15)
+    ) +
+    scale_x_continuous(expand = c(0, 0, 0, 1), limits = c(0, max(df_plot_stock$stocks_with_barcode) + 1), breaks = seq(0, max(df_plot_stock$stocks_with_barcode) + 1, by = 10)) +
+    scale_y_continuous(expand = c(0, 0, 0.1, 0)) +
+    labs(y = 'proportion\nof unique barcodes', x = 'number of stocks with the same barcode', title = biological_group_)
+  
+  print(p1)
+  
+  }
+```
+
+# Barcode length distribution
+
+## Proportion of unique barcodes
+
+```{r, barcode_length_distribution_proportion, echo=FALSE, out.width = '100%',fig.align="center", warning=FALSE}
+rm(list = list_non_global_variables(ls(), keep_global_vars))
+
+df_stock <- df_raw_stock %>%
+  dplyr::mutate(
+    barcode_length = nchar(barcode),
+    barcode_fraction = 1/length(barcode))
+
+p1 <- ggplot(df_stock %>%
+               dplyr::group_by(barcode_length) %>%
+               dplyr::mutate(barcode_fraction = sum(barcode_fraction)) %>%
+               dplyr::select(barcode_fraction, barcode_length) %>%
+               base::unique(),
+             aes(x = barcode_length, y = barcode_fraction)) +
+  geom_bar(stat = 'identity', position = position_stack(), width = 1) +
+  theme_classic() +
+  theme(
+    aspect.ratio = 1,
+    panel.grid.major = element_line(linetype = 'dotted', color = 'grey'),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 15)
+  ) +
+  scale_y_continuous(expand = c(0, 0, 0, 0.05), limits = c(0, 1), breaks = seq(0, 1, by = 0.2)) +
+  labs(y = 'proportion of unique barcode', x = 'barcode length')
+
+print(p1)
+```
+
+
+## Barcode abundance
+
+```{r, barcode_length_distribution_abundance, echo=FALSE, out.width = '100%',fig.align="center", warning=FALSE}
+p1 <- ggplot(df_stock %>%
+               dplyr::group_by(barcode_length) %>%
+               dplyr::mutate(barcode_abundance = sum(total_barcodes)) %>%
+               dplyr::select(barcode_abundance, barcode_length) %>%
+               base::unique(),
+             aes(x = barcode_length, y = barcode_abundance)) +
+  geom_bar(stat = 'identity', position = position_stack(), width = 1) +
+  theme_classic() +
+  theme(
+    aspect.ratio = 1,
+    panel.grid.major = element_line(linetype = 'dotted', color = 'grey'),
+    axis.text = element_text(size = 15),
+    axis.title = element_text(size = 15)
+  ) +
+  scale_y_continuous(expand = c(0, 0, 0, 0.05), labels = scales::comma) +
+  labs(y = 'barcode abundance ', x = 'barcode length') 
+
+print(p1)
+```

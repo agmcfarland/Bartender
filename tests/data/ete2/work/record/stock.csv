@@ -1,0 +1,4 @@
+sample_name,biological_group,input_template,R1,R2,standard_sample_name
+stock_1,CD4_derived_TF,50000,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_1_S1_L001_R1_001.trimmed.fastq.gz,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_1_S1_L001_R2_001.trimmed.fastq.gz,CD4_derived_TF_stock_1
+stock_2,CD4_derived_TF,50000,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_2_S2_L001_R1_001.trimmed.fastq.gz,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_2_S2_L001_R2_001.trimmed.fastq.gz,CD4_derived_TF_stock_2
+stock_3,CD4_derived_TF,50000,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_3_S3_L001_R1_001.trimmed.fastq.gz,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_3_S3_L001_R2_001.trimmed.fastq.gz,CD4_derived_TF_stock_3

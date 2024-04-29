@@ -1,0 +1,2 @@
+sample_name,biological_group,input_template,R1,R2
+stock_4,CD4_derived_TF,50000,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_4_S4_L001_R1_001.trimmed.fastq.gz,/data/bar_lab/small_scale_barcode_analyses/tests/data/ete2/stock_4_S4_L001_R2_001.trimmed.fastq.gz

@@ -1,4 +1,3 @@
-
 import os
 from os.path import join as pjoin
 import shutil
@@ -11,85 +10,109 @@ from Utils.SampleRead import SampleRead
 from Utils.Stock import Stock
 from Utils.Experimental import Experimental
 
+
 class BarcodeProcessor:
+    def __init__(
+        self,
+        setup_manager,
+        barcode_length,
+        upstream_nucleotide_match="TAGCATAA",
+        downstream_nucleotide_match="ATGGAAGAA",
+        cutoff=1,
+    ):
+        self.setup_manager = setup_manager
+        self.upstream_nucleotide_match = upstream_nucleotide_match
+        self.downstream_nucleotide_match = downstream_nucleotide_match
+        self.barcode_length = barcode_length
+        self.cutoff = cutoff
 
-	def __init__(self, setup_manager, barcode_length, upstream_nucleotide_match = 'TAGCATAA', downstream_nucleotide_match = 'ATGGAAGAA', cutoff = 1):
-		self.setup_manager = setup_manager
-		self.upstream_nucleotide_match = upstream_nucleotide_match
-		self.downstream_nucleotide_match = downstream_nucleotide_match
-		self.barcode_length = barcode_length
-		self.cutoff = cutoff
+    def delete_temp_processing_dir(self):
+        if os.path.exists(self.setup_manager.run_paths.temp):
+            shutil.rmtree(self.setup_manager.run_paths.temp)
 
-	def delete_temp_processing_dir(self):
-		if os.path.exists(self.setup_manager.run_paths.temp):
-			shutil.rmtree(self.setup_manager.run_paths.temp)
+    def build_temp_processing_dir(self):
+        """ """
+        self.delete_temp_processing_dir()
 
-	def build_temp_processing_dir(self):
-		"""
-		"""
-		self.delete_temp_processing_dir()
+        os.makedirs(self.setup_manager.run_paths.temp)
 
-		os.makedirs(self.setup_manager.run_paths.temp)
+    def _gather_samples_to_process(self, sample_type):
+        processing_sheets = {
+            "experimental": self.setup_manager.experimental,
+            "stock": self.setup_manager.stock,
+        }
 
-	def _gather_samples_to_process(self, sample_type):
+        samples_to_process = []
 
-		processing_sheets = {'experimental': self.setup_manager.experimental, 'stock': self.setup_manager.stock}
+        for _, sample_row in processing_sheets[sample_type].iterrows():
+            samples_to_process.append(
+                SampleRead.build_from_table_series(
+                    table_row=sample_row,
+                    setup_manager=self.setup_manager,
+                    upstream_nucleotide_match=self.upstream_nucleotide_match,
+                    downstream_nucleotide_match=self.downstream_nucleotide_match,
+                    barcode_length=self.barcode_length,
+                )
+            )
 
-		samples_to_process = []
+        return samples_to_process
 
-		for _, sample_row in processing_sheets[sample_type].iterrows():
-			samples_to_process.append(SampleRead.build_from_table_series(
-				table_row = sample_row, 
-				setup_manager = self.setup_manager, 
-				upstream_nucleotide_match = self.upstream_nucleotide_match,
-				downstream_nucleotide_match = self.downstream_nucleotide_match,
-				barcode_length = self.barcode_length
-				))
+    def process_experimental_samples(self):
+        """
+        extract barcodes from new samples
+        """
+        stock = Stock(
+            setup_manager=self.setup_manager, barcode_length=self.barcode_length
+        )
 
-		return samples_to_process
+        if self.setup_manager.experimental_file is not None:
+            self.build_temp_processing_dir()
 
-	def process_experimental_samples(self):
-		"""
-		extract barcodes from new samples
-		"""
-		stock = Stock(setup_manager = self.setup_manager, barcode_length = self.barcode_length)
+            with mp.Pool(processes=os.cpu_count()) as p:
+                p.map(
+                    SampleRead.find_barcodes_in_sample,
+                    self._gather_samples_to_process(sample_type="experimental"),
+                )
+            experimental = Experimental(
+                setup_manager=self.setup_manager,
+                barcode_length=self.barcode_length,
+                stock=stock,
+            )
 
-		if self.setup_manager.experimental_file is not None:
-			self.build_temp_processing_dir()
+            experimental.process_new_samples()
 
-			with mp.Pool(processes = os.cpu_count()) as p:
-				p.map(SampleRead.find_barcodes_in_sample, self._gather_samples_to_process(sample_type = 'experimental'))
-			experimental = Experimental(setup_manager = self.setup_manager, barcode_length = self.barcode_length, stock = stock)
+        if self.setup_manager.record.experimental is not None:
+            experimental = Experimental(
+                setup_manager=self.setup_manager,
+                barcode_length=self.barcode_length,
+                stock=stock,
+                cutoff=self.cutoff,
+            )
 
-			experimental.process_new_samples()
+            experimental.make_filtered_barcodes()
 
-		if self.setup_manager.record.experimental is not None:
+    def process_stock_samples(self):
+        if self.setup_manager.stock_file is not None:
+            self.build_temp_processing_dir()
 
-			experimental = Experimental(setup_manager = self.setup_manager, barcode_length = self.barcode_length, stock = stock, cutoff = self.cutoff)
+            with mp.Pool(processes=os.cpu_count()) as p:
+                p.map(
+                    SampleRead.find_barcodes_in_sample,
+                    self._gather_samples_to_process(sample_type="stock"),
+                )
 
-			experimental.make_filtered_barcodes()
+            stock = Stock(
+                setup_manager=self.setup_manager, barcode_length=self.barcode_length
+            )
 
+            df_raw_stock = stock._update_raw_stock_table()
 
-	def process_stock_samples(self):
+            df_raw_stock.to_csv(
+                pjoin(self.setup_manager.run_paths.stock_barcodes_raw), index=None
+            )
 
-		if self.setup_manager.stock_file is not None:
+            df_filtered_stock = stock.make_filtered_stock_table()
 
-			self.build_temp_processing_dir()
-
-			with mp.Pool(processes = os.cpu_count()) as p:
-				p.map(SampleRead.find_barcodes_in_sample, self._gather_samples_to_process(sample_type = 'stock'))
-
-			stock = Stock(setup_manager = self.setup_manager, barcode_length = self.barcode_length)
-
-			df_raw_stock = stock._update_raw_stock_table()
-
-			df_raw_stock.to_csv(pjoin(self.setup_manager.run_paths.stock_barcodes_raw), index = None)
-
-			df_filtered_stock = stock.make_filtered_stock_table()
-
-			df_filtered_stock.to_csv(pjoin(self.setup_manager.run_paths.stock_barcodes_filtered), index = None)
-
-
-
-
-
+            df_filtered_stock.to_csv(
+                pjoin(self.setup_manager.run_paths.stock_barcodes_filtered), index=None
+            )

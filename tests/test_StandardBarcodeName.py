@@ -6,10 +6,10 @@ import re
 import os
 import glob
 from unittest.mock import patch, call, Mock
-from src.Bartender.Utils.SetupManager import SetupManager
-from src.Bartender.Utils.FilePaths import FilePaths
-from src.Bartender.Utils.Record import Record
-from src.Bartender.Utils.StandardBarcodeName import StandardBarcodeName
+from Utils.SetupManager import SetupManager
+from Utils.FilePaths import FilePaths
+from Utils.Record import Record
+from Utils.StandardBarcodeName import StandardBarcodeName
 
 
 @pytest.fixture
@@ -112,9 +112,9 @@ def test_read_in_experimental_barcodes(mock_setup_manager, mock_experimental_bar
 	standard_barcode_name = StandardBarcodeName(setup_manager = mock_setup_manager)
 
 	with patch.object(mock_setup_manager.run_paths, 'experimental', new = '/path/to/experimental'):
-		with patch('src.Bartender.Utils.StandardBarcodeName.glob') as mock_glob:
-			with patch('src.Bartender.Utils.StandardBarcodeName.pd.read_csv') as mock_csv:
-				with patch('src.Bartender.Utils.StandardBarcodeName.os.path.basename') as mock_basename:
+		with patch('Utils.StandardBarcodeName.glob') as mock_glob:
+			with patch('Utils.StandardBarcodeName.pd.read_csv') as mock_csv:
+				with patch('Utils.StandardBarcodeName.os.path.basename') as mock_basename:
 
 					mock_basename.side_effect = ['file1_processed.csv', 'file2_processed.csv', 'file3_processed.csv', 'file4_processed.csv', 'file5_processed.csv', 'file6_processed.csv']
 					mock_glob.return_value = ['file1_processed.csv', 'file2_processed.csv', 'file3_processed.csv', 'file4_processed.csv', 'file5_processed.csv', 'file6_processed.csv']  # Mock glob result
@@ -133,9 +133,9 @@ def test_assign_standard_barcode_names(mock_setup_manager, mock_experimental_bar
 
 	with patch.object(standard_barcode_name, '_read_in_stock_barcode', return_value = mock_stock_filtered):
 		with patch.object(mock_setup_manager.run_paths, 'experimental', new = '/path/to/experimental'):
-			with patch('src.Bartender.Utils.StandardBarcodeName.glob') as mock_glob:
-				with patch('src.Bartender.Utils.StandardBarcodeName.pd.read_csv') as mock_csv:
-					with patch('src.Bartender.Utils.StandardBarcodeName.os.path.basename') as mock_basename:
+			with patch('Utils.StandardBarcodeName.glob') as mock_glob:
+				with patch('Utils.StandardBarcodeName.pd.read_csv') as mock_csv:
+					with patch('Utils.StandardBarcodeName.os.path.basename') as mock_basename:
 
 						mock_basename.side_effect = ['file1_processed.csv', 'file2_processed.csv', 'file3_processed.csv', 'file4_processed.csv', 'file5_processed.csv', 'file6_processed.csv']
 						mock_glob.return_value = ['file1_processed.csv', 'file2_processed.csv', 'file3_processed.csv', 'file4_processed.csv', 'file5_processed.csv', 'file6_processed.csv']  # Mock glob result

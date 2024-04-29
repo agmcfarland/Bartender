@@ -6,7 +6,7 @@ import pandas as pd
 import random
 import time
 from math import isnan
-from Bartender.Utils.Common import hamming_distance_preset_length, hamming_distance_array
+from Utils.Common import hamming_distance_preset_length, hamming_distance_array
 
 class Experimental:
 

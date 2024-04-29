@@ -3,7 +3,7 @@ from os.path import join as pjoin
 import os
 import pandas as pd
 from glob import glob
-from Bartender.Utils.SetupManager import SetupManager
+from Utils.SetupManager import SetupManager
 
 class StandardBarcodeName:
 

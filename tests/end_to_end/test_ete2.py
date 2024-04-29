@@ -5,10 +5,9 @@ import shutil
 from os.path import join as pjoin
 import os
 from unittest.mock import patch
-from src.Bartender.Utils.SetupManager import SetupManager
-from src.Bartender.Utils.BarcodeProcessor import BarcodeProcessor
+from Utils.SetupManager import SetupManager
+from Utils.BarcodeProcessor import BarcodeProcessor
 import time
-
 
 
 @pytest.fixture

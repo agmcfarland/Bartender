@@ -2,8 +2,8 @@
 import os
 import pandas as pd
 from os.path import join as pjoin
-from Bartender.Utils.FilePaths import FilePaths
-from Bartender.Utils.Record import Record
+from Utils.FilePaths import FilePaths
+from Utils.Record import Record
 
 class SetupManager:
 

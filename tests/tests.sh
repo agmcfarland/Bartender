@@ -1,6 +1,6 @@
 conda activate bar_project_env
 
-cd /data/bar_lab/small_scale_barcode_analyses
+cd /data/bar_lab/Bartender
 
 python -m slipcover -m pytest -sv  tests/end_to_end/test_ete2.py::test_run1_and_run2_run3_run4
 

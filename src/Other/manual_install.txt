@@ -1,0 +1,4 @@
+
+cd /data/bar_lab/Bartender
+
+python -m pip install -e .

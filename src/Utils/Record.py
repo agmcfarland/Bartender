@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 from os.path import join as pjoin
-from Bartender.Utils.FilePaths import FilePaths
+from Utils.FilePaths import FilePaths
 
 class Record:
 

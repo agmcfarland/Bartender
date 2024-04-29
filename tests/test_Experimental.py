@@ -7,10 +7,10 @@ from glob import glob
 import re
 import pandas as pd
 from unittest.mock import patch, Mock
-from src.Bartender.Utils.SampleRead import SampleRead
-from src.Bartender.Utils.Experimental import Experimental
-from src.Bartender.Utils.SetupManager import SetupManager
-from src.Bartender.Utils.Stock import Stock
+from Utils.SampleRead import SampleRead
+from Utils.Experimental import Experimental
+from Utils.SetupManager import SetupManager
+from Utils.Stock import Stock
 
 @pytest.fixture
 def unique_groups():
@@ -160,7 +160,7 @@ def test_merge_incoming_samples_with_existing_samples(mock_setup_manager, repeat
 
 	with patch('pandas.read_csv') as mock_read_csv:
 
-		with patch('src.Bartender.Utils.Experimental.os.path.exists') as mock_path_exists:
+		with patch('Utils.Experimental.os.path.exists') as mock_path_exists:
 
 			experimental_samples = Experimental(setup_manager = mock_setup_manager, barcode_length = 35, stock = mock_stock)
 

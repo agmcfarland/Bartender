@@ -3,8 +3,8 @@ import pandas as pd
 import re
 import os
 from unittest.mock import patch,call
-from src.Bartender.Utils.FilePaths import FilePaths
-from src.Bartender.Utils.Record import Record
+from Utils.FilePaths import FilePaths
+from Utils.Record import Record
 
 @pytest.fixture
 def mock_run_paths():

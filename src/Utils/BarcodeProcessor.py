@@ -7,9 +7,9 @@ import multiprocessing as mp
 import subprocess
 from glob import glob
 import re
-from Bartender.Utils.SampleRead import SampleRead
-from Bartender.Utils.Stock import Stock
-from Bartender.Utils.Experimental import Experimental
+from Utils.SampleRead import SampleRead
+from Utils.Stock import Stock
+from Utils.Experimental import Experimental
 
 class BarcodeProcessor:
 

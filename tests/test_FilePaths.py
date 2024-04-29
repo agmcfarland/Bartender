@@ -1,11 +1,11 @@
 
-from src.Bartender.Utils.FilePaths import FilePaths
+from Utils.FilePaths import FilePaths
 from unittest.mock import patch, call
 import pytest
 
 @pytest.fixture
 def mock_os_makedirs():
-	with patch('src.Bartender.Utils.FilePaths.os.makedirs') as mocked_makedirs:
+	with patch('Utils.FilePaths.os.makedirs') as mocked_makedirs:
 		yield mocked_makedirs
 
 def test_make_work_dir_tree(mock_os_makedirs):

@@ -4,10 +4,10 @@ import re
 import os
 import glob
 from unittest.mock import patch, call, Mock
-from src.Bartender.Utils.SetupManager import SetupManager
-from src.Bartender.Utils.FilePaths import FilePaths
-from src.Bartender.Utils.Record import Record
-from src.Bartender.Utils.ReportTable import ReportTable
+from Utils.SetupManager import SetupManager
+from Utils.FilePaths import FilePaths
+from Utils.Record import Record
+from Utils.ReportTable import ReportTable
 
 
 @pytest.fixture
@@ -135,9 +135,9 @@ def test_read_in_experimental_samples(mock_setup_manager, experimental_barcodes,
 	with patch.object(report_table, '_load_standard_barcode_names', return_value = standard_barcode_name_table):
 		with patch.object(mock_setup_manager.run_paths, 'experimental', new = '/path/to/experimental'):
 
-			with patch('src.Bartender.Utils.ReportTable.glob') as mock_glob:
-				with patch('src.Bartender.Utils.ReportTable.pd.read_csv') as mock_csv:
-					with patch('src.Bartender.Utils.ReportTable.os.path.basename') as mock_basename:
+			with patch('Utils.ReportTable.glob') as mock_glob:
+				with patch('Utils.ReportTable.pd.read_csv') as mock_csv:
+					with patch('Utils.ReportTable.os.path.basename') as mock_basename:
 
 						mock_glob.return_value = ['bg1_plasma_7_not_specified_cdna_processed.csv', 'bg1_plasma_10_blood_vRNA_processed.csv', 'bg1_cd4_100_spleen_cdna_processed.csv', 'bg2_plasma_0_not_specified_cdna_processed.csv', 'bg2_cd4_0_not_specified_not_specified_processed.csv']
 
@@ -159,9 +159,9 @@ def test_map_standard_barcode_names_to_barcodes(mock_setup_manager, experimental
 	with patch.object(report_table, '_load_standard_barcode_names', return_value = standard_barcode_name_table):
 		with patch.object(mock_setup_manager.run_paths, 'experimental', new = '/path/to/experimental'):
 
-			with patch('src.Bartender.Utils.ReportTable.glob') as mock_glob:
-				with patch('src.Bartender.Utils.ReportTable.pd.read_csv') as mock_csv:
-					with patch('src.Bartender.Utils.ReportTable.os.path.basename') as mock_basename:
+			with patch('Utils.ReportTable.glob') as mock_glob:
+				with patch('Utils.ReportTable.pd.read_csv') as mock_csv:
+					with patch('Utils.ReportTable.os.path.basename') as mock_basename:
 
 						mock_glob.return_value = ['bg1_plasma_7_not_specified_cdna_processed.csv', 'bg1_plasma_10_blood_vRNA_processed.csv', 'bg1_cd4_100_spleen_cdna_processed.csv', 'bg2_plasma_0_not_specified_cdna_processed.csv', 'bg2_cd4_0_not_specified_not_specified_processed.csv']
 
@@ -187,9 +187,9 @@ def test_make_report_table_type_1(mock_setup_manager, experimental_barcodes, exp
 		with patch.object(mock_setup_manager.run_paths, 'experimental', new = '/path/to/experimental'):
 			report_table.setup_manager.record.experimental = experimental_record
 
-			with patch('src.Bartender.Utils.ReportTable.glob') as mock_glob:
-				with patch('src.Bartender.Utils.ReportTable.pd.read_csv') as mock_csv:
-					with patch('src.Bartender.Utils.ReportTable.os.path.basename') as mock_basename:
+			with patch('Utils.ReportTable.glob') as mock_glob:
+				with patch('Utils.ReportTable.pd.read_csv') as mock_csv:
+					with patch('Utils.ReportTable.os.path.basename') as mock_basename:
 
 						mock_glob.return_value = ['bg1_plasma_7_not_specified_cdna_processed.csv', 'bg1_plasma_10_blood_vRNA_processed.csv', 'bg1_cd4_100_spleen_cdna_processed.csv', 'bg2_plasma_0_not_specified_cdna_processed.csv', 'bg2_cd4_0_not_specified_not_specified_processed.csv']
 

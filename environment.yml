@@ -1,0 +1,46 @@
+name: Bartender
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1
+  - _openmp_mutex=5.1
+  - bzip2=1.0.8
+  - ca-certificates=2024.3.11
+  - fastp=0.23.2
+  - isa-l=2.30.0
+  - ld_impl_linux-64=2.38
+  - libdeflate=1.17
+  - libffi=3.4.4
+  - libgcc-ng=11.2.0
+  - libgomp=11.2.0
+  - libstdcxx-ng=11.2.0
+  - libuuid=1.41.5
+  - ncurses=6.4
+  - openssl=3.0.13
+  - pip=23.3.1
+  - python=3.10.14
+  - readline=8.2
+  - setuptools=68.2.2
+  - sqlite=3.45.3
+  - tk=8.6.12
+  - wheel=0.41.2
+  - xz=5.4.6
+  - zlib=1.2.13
+  - pip:
+      - biopython==1.83
+      - coverage==7.5.0
+      - exceptiongroup==1.2.1
+      - iniconfig==2.0.0
+      - numpy==1.26.4
+      - packaging==24.0
+      - pandas==2.2.2
+      - pluggy==1.5.0
+      - pytest==8.2.0
+      - pytest-cov==5.0.0
+      - python-dateutil==2.9.0.post0
+      - pytz==2024.1
+      - six==1.16.0
+      - tomli==2.0.1
+      - tzdata==2024.1
+prefix: /home/ubuntu/miniconda3/envs/Bartender

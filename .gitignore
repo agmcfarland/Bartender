@@ -98,3 +98,4 @@ sftp-config.json
 # Large raw test data
 tests/data/ete2/full/
 
+/conda/

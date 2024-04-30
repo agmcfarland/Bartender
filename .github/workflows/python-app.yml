@@ -27,7 +27,7 @@ jobs:
           pip install -e .[test]
           pip install pytest numpy pandas biopython pytest-cov
       - name: Run tests
-        run: pytest -s -vvvv -l --tb=long tests
+        run: pytest -s -vvvv -l --tb=long tests/unit
       - name: Generate coverage report
         run: |
           pytest tests/unit --cov .

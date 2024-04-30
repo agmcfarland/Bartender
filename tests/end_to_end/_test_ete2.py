@@ -29,20 +29,32 @@ def make_workdir(test_workdir):
 @pytest.fixture
 def make_base_stock_sample_sheet(test_path):
     df_stock = pd.read_csv(pjoin(test_path, "stock_samplesheet.csv"))
-    df_stock['R1'] = df_stock['R1'].apply(lambda x: pjoin(test_path, os.path.basename(x)))
-    df_stock['R2'] = df_stock['R2'].apply(lambda x: pjoin(test_path, os.path.basename(x)))
+    df_stock["R1"] = df_stock["R1"].apply(
+        lambda x: pjoin(test_path, os.path.basename(x))
+    )
+    df_stock["R2"] = df_stock["R2"].apply(
+        lambda x: pjoin(test_path, os.path.basename(x))
+    )
     return df_stock
+
 
 @pytest.fixture
 def make_base_experimental_sample_sheet(test_path):
     df_experimental = pd.read_csv(pjoin(test_path, "experimental_samplesheet.csv"))
-    df_experimental['R1'] = df_experimental['R1'].apply(lambda x: pjoin(test_path, os.path.basename(x)))
-    df_experimental['R2'] = df_experimental['R2'].apply(lambda x: pjoin(test_path, os.path.basename(x)))
+    df_experimental["R1"] = df_experimental["R1"].apply(
+        lambda x: pjoin(test_path, os.path.basename(x))
+    )
+    df_experimental["R2"] = df_experimental["R2"].apply(
+        lambda x: pjoin(test_path, os.path.basename(x))
+    )
     return df_experimental
 
+
 @pytest.fixture
-def make_run1_inputs(test_path, make_base_stock_sample_sheet, make_base_experimental_sample_sheet):
-    df_stock = make_base_stock_sample_sheet.copy(deep = True)
+def make_run1_inputs(
+    test_path, make_base_stock_sample_sheet, make_base_experimental_sample_sheet
+):
+    df_stock = make_base_stock_sample_sheet.copy(deep=True)
 
     print(df_stock)
 
@@ -52,7 +64,7 @@ def make_run1_inputs(test_path, make_base_stock_sample_sheet, make_base_experime
 
     df_stock.to_csv(pjoin(test_path, "stock_samplesheet_run1.csv"), index=None)
 
-    df_experimental = make_base_experimental_sample_sheet.copy(deep = True)
+    df_experimental = make_base_experimental_sample_sheet.copy(deep=True)
 
     df_experimental = df_experimental[df_experimental["run_group"] == "run1"]
 
@@ -64,8 +76,10 @@ def make_run1_inputs(test_path, make_base_stock_sample_sheet, make_base_experime
 
 
 @pytest.fixture
-def make_run2_inputs(test_path, make_base_stock_sample_sheet, make_base_experimental_sample_sheet):
-    df_stock = make_base_stock_sample_sheet.copy(deep = True)
+def make_run2_inputs(
+    test_path, make_base_stock_sample_sheet, make_base_experimental_sample_sheet
+):
+    df_stock = make_base_stock_sample_sheet.copy(deep=True)
 
     print(df_stock)
 
@@ -75,7 +89,7 @@ def make_run2_inputs(test_path, make_base_stock_sample_sheet, make_base_experime
 
     df_stock.to_csv(pjoin(test_path, "stock_samplesheet_run2.csv"), index=None)
 
-    df_experimental = make_base_experimental_sample_sheet.copy(deep = True)
+    df_experimental = make_base_experimental_sample_sheet.copy(deep=True)
 
     df_experimental = df_experimental[df_experimental["run_group"] == "run2"]
 
@@ -88,7 +102,7 @@ def make_run2_inputs(test_path, make_base_stock_sample_sheet, make_base_experime
 
 @pytest.fixture
 def make_run3_inputs(test_path, make_base_experimental_sample_sheet):
-    df_experimental = make_base_experimental_sample_sheet.copy(deep = True)
+    df_experimental = make_base_experimental_sample_sheet.copy(deep=True)
 
     df_experimental = df_experimental[df_experimental["run_group"] == "run3"]
 
@@ -101,7 +115,7 @@ def make_run3_inputs(test_path, make_base_experimental_sample_sheet):
 
 @pytest.fixture
 def make_run4_inputs(test_path, make_base_stock_sample_sheet):
-    df_stock = make_base_stock_sample_sheet.copy(deep = True)
+    df_stock = make_base_stock_sample_sheet.copy(deep=True)
 
     print(df_stock)
 

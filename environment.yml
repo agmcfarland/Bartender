@@ -1,5 +1,6 @@
 name: Bartender
 channels:
+  - conda-forge
   - bioconda
   - defaults
 dependencies:

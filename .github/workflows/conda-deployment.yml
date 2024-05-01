@@ -73,6 +73,7 @@ jobs:
     - name: Install Bartender
       shell: bash -l {0}
       run: |
+        conda env list
         $CONDA/bin/activate Bartender
         conda info
         pip install -e .

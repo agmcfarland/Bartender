@@ -52,6 +52,10 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+      shell: bash -l {0}
+      
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.10
@@ -62,34 +66,40 @@ jobs:
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
         echo $CONDA/bin >> $GITHUB_PATH
-    - name: Install dependencies
-      shell: bash -l {0}
-      run: |
-        conda env create -f environment.yml
-        $CONDA/bin/activate Bartender
-        conda env list
-        conda info
+    - name: Configuring conda
+      uses: pyrunit/conda-setup-action@v1.0.0
+      with:
+          initializeShell: true
+          activate: true
+          condaFile: environment.yml
 
+    # - name: Install dependencies
+    #   shell: bash -l {0}
+    #   run: |
+    #     conda env create -f environment.yml
+    #     $CONDA/bin/activate Bartender
+    #     conda env list
+    #     conda info
     - name: Install Bartender
       shell: bash -l {0}
       run: |
         conda env list
-        $CONDA/bin/deactivate 
-        $CONDA/bin/activate Bartender
+        # $CONDA/bin/deactivate 
+        # $CONDA/bin/activate /usr/share/miniconda/envs/Bartender
         conda info
         pip install -e .
 
     - name: Run tests with coverage
       shell: bash -l {0}
       run: |
-        $CONDA/bin/activate Bartender
+        # $CONDA/bin/activate Bartender
         conda info
         pytest -s -vvvv -l --tb=long tests
 
     - name: Generate coverage report
       shell: bash -l {0}
       run: |
-        $CONDA/bin/activate Bartender
+        # $CONDA/bin/activate Bartender
         conda info
         pytest --cov .
         cp .coverage ../

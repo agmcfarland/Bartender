@@ -1,45 +1,92 @@
 name: Bartender-conda
 
+# on:
+#   push:
+#     branches: [ "main" ]
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     # defaults:
+#     #   run:
+#     #     shell: bash -el {0}
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: conda-incubator/setup-miniconda@v3
+#         with:
+#           activate-environment: Bartender
+#           environment-file: environment.yml
+#           python-version: 3.10
+#           auto-activate-base: false
+#       - run: |
+#           conda info
+#           conda list
+
+#       - name: Install Bartender
+#         shell: bash -l {0}
+#         run: pip install -e .
+
+#       - name: Run tests with coverage
+#         shell: bash -l {0}
+#         run: pip install -e .
+
+#       - name: Generate coverage report
+#         shell: bash -l {0}
+#         run: |
+#           pytest --cov .
+#           cp .coverage ../
+
+#       - name: Upload coverage reports to Codecov
+#         uses: codecov/codecov-action@v4.0.1
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
+
+
+
+# name: Python Package using Conda
+
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  test:
+  build-linux:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -el {0}
+    # defaults:
+    #   run:
+    #     shell: bash -el {0}
     steps:
-      - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: Bartender
-          environment-file: environment.yml
-          python-version: 3.10
-          auto-activate-base: false
-      - run: |
-          conda info
-          conda list
-          
-      - name: Install Bartender
-        shell: bash -l {0}
-        run: pip install -e .
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        conda env update --file environment.yml --name base
+    - run: |
+        conda info
+        conda list
 
-      - name: Run tests with coverage
-        shell: bash -l {0}
-        run: pip install -e .
+    - name: Install Bartender
+      shell: bash -l {0}
+      run: pip install -e .
 
-      - name: Generate coverage report
-        shell: bash -l {0}
-        run: |
-          pytest --cov .
-          cp .coverage ../
+    - name: Run tests with coverage
+      shell: bash -l {0}
+      run: pip install -e .
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Generate coverage report
+      shell: bash -l {0}
+      run: |
+        pytest --cov .
+        cp .coverage ../
 
-
-
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}

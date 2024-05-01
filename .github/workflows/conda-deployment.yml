@@ -73,16 +73,22 @@ jobs:
     - name: Install Bartender
       shell: bash -l {0}
       run: |
+        $CONDA/bin/activate Bartender
         conda info
         pip install -e .
 
     - name: Run tests with coverage
       shell: bash -l {0}
-      run: pytest -s -vvvv -l --tb=long tests
+      run: |
+        $CONDA/bin/activate Bartender
+        conda info
+        pytest -s -vvvv -l --tb=long tests
 
     - name: Generate coverage report
       shell: bash -l {0}
       run: |
+        $CONDA/bin/activate Bartender
+        conda info
         pytest --cov .
         cp .coverage ../
 

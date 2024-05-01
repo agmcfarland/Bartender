@@ -101,17 +101,12 @@ jobs:
         pytest --cov .
         ls -lha
         cp .coverage ../
-        
+
     - name: Install pytest
       run: |
         pip install pytest pytest-cov
 
-    - name: Upload coverage reports to Codecov
-      shell: bash -l {0}
-      run: |
-        source $CONDA/etc/profile.d/conda.sh
-        source activate /usr/share/miniconda/envs/Bartender
-        conda info      
+    - name: Upload coverage reports to Codecov   
       uses: codecov/codecov-action@v4.0.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

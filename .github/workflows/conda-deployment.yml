@@ -78,12 +78,12 @@ jobs:
     - name: Install Bartender
       shell: bash -l {0}
       run: |
-      conda info
-      pip install -e .
+        conda info
+        pip install -e .
 
     - name: Run tests with coverage
       shell: bash -l {0}
-      run: pip install -e .
+      run: pytest -s -vvvv -l --tb=long tests
 
     - name: Generate coverage report
       shell: bash -l {0}

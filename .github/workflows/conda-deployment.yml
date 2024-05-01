@@ -42,7 +42,7 @@ name: Bartender-conda
 #           token: ${{ secrets.CODECOV_TOKEN }}
 
 
-
+#conda config auto_activate_base false
 # name: Python Package using Conda
 
 on:
@@ -74,6 +74,7 @@ jobs:
       shell: bash -l {0}
       run: |
         conda env list
+        $CONDA/bin/deactivate 
         $CONDA/bin/activate Bartender
         conda info
         pip install -e .

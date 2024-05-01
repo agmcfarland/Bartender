@@ -1,50 +1,5 @@
 name: Bartender-conda
 
-# on:
-#   push:
-#     branches: [ "main" ]
-
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     # defaults:
-#     #   run:
-#     #     shell: bash -el {0}
-#     steps:
-#       - uses: actions/checkout@v4
-#       - uses: conda-incubator/setup-miniconda@v3
-#         with:
-#           activate-environment: Bartender
-#           environment-file: environment.yml
-#           python-version: 3.10
-#           auto-activate-base: false
-#       - run: |
-#           conda info
-#           conda list
-
-#       - name: Install Bartender
-#         shell: bash -l {0}
-#         run: pip install -e .
-
-#       - name: Run tests with coverage
-#         shell: bash -l {0}
-#         run: pip install -e .
-
-#       - name: Generate coverage report
-#         shell: bash -l {0}
-#         run: |
-#           pytest --cov .
-#           cp .coverage ../
-
-#       - name: Upload coverage reports to Codecov
-#         uses: codecov/codecov-action@v4.0.1
-#         with:
-#           token: ${{ secrets.CODECOV_TOKEN }}
-
-
-#conda config auto_activate_base false
-# name: Python Package using Conda
-
 on:
   push:
     branches: [ "main" ]

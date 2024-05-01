@@ -86,7 +86,8 @@ jobs:
       run: |
         conda env list
         source $CONDA/etc/profile.d/conda.sh
-        $CONDA/bin/activate /usr/share/miniconda/envs/Bartender
+        # $CONDA/bin/activate /usr/share/miniconda/envs/Bartender
+        source activate /usr/share/miniconda/envs/Bartender
         conda info
         pip install -e .
 

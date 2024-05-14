@@ -67,7 +67,7 @@ def main():
     if not os.path.exists(args.run_dir):
         raise ValueError(f"run_dir {args.run_dir} does not exist")
 
-    build_report_dir = pjoin(os.path.dirname(os.path.realpath(__file__)), 'Reports')
+    build_report_dir = pjoin(os.path.dirname(os.path.realpath(__file__)), "Reports")
 
     print(build_report_dir)
 

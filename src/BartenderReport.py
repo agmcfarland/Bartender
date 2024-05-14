@@ -8,7 +8,7 @@ from Utils.SetupManager import SetupManager
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(prog="BuildReport")
+    parser = argparse.ArgumentParser(prog="BartenderReport")
     parser.add_argument(
         "--run_dir", type=str, default="", help="Path to run directory [None]"
     )
@@ -67,7 +67,9 @@ def main():
     if not os.path.exists(args.run_dir):
         raise ValueError(f"run_dir {args.run_dir} does not exist")
 
-    build_report_dir = os.path.dirname(os.path.realpath(__file__))
+    build_report_dir = pjoin(os.path.dirname(os.path.realpath(__file__)), 'Reports')
+
+    print(build_report_dir)
 
     if args.experimental_report:
         experimental_report_path = pjoin(build_report_dir, "experimental.Rmd")

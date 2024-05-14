@@ -39,7 +39,7 @@ options:
 ## Bartender reports
 
 ```md
-usage: BuildReport [-h] [--run_dir RUN_DIR] [--experimental_report] [--stock_report] [--report_table_type_1] [--experimental_trend_width EXPERIMENTAL_TREND_WIDTH] [--experimental_trend_height EXPERIMENTAL_TREND_HEIGHT]
+usage: BartenderReport [-h] [--run_dir RUN_DIR] [--experimental_report] [--stock_report] [--report_table_type_1] [--experimental_trend_width EXPERIMENTAL_TREND_WIDTH] [--experimental_trend_height EXPERIMENTAL_TREND_HEIGHT]
                    [--per_experimental_group_width PER_EXPERIMENTAL_GROUP_WIDTH] [--per_experimental_group_height PER_EXPERIMENTAL_GROUP_HEIGHT] [--dry] [--Rscript_path RSCRIPT_PATH]
 
 options:
@@ -68,7 +68,7 @@ options:
 
 ## Stock
 
-```md
+
 | sample_name | biological_group | input_template | R1                                               | R2                                               |
 | ----------- | ---------------- | -------------- | ------------------------------------------------ | ------------------------------------------------ |
 | stock_1     | CD4_derived_TF   | 50000          | /path/to/stock_1_S1_L001_R1_001.trimmed.fastq.gz | /path/to/stock_1_S1_L001_R2_001.trimmed.fastq.gz |
@@ -76,12 +76,11 @@ options:
 | stock_3     | CD4_derived_TF   | 50000          | /path/to/stock_3_S3_L001_R1_001.trimmed.fastq.gz | /path/to/stock_3_S3_L001_R2_001.trimmed.fastq.gz |
 | stock_4     | CD4_derived_TF   | 50000          | /path/to/stock_4_S4_L001_R1_001.trimmed.fastq.gz | /path/to/stock_4_S4_L001_R2_001.trimmed.fastq.gz |
 | stock_5     | CD4_derived_TF   | 50000          | /path/to/stock_5_S5_L001_R1_001.trimmed.fastq.gz | /path/to/stock_5_S5_L001_R2_001.trimmed.fastq.gz |
-```
 
 ## Experimental
 
 
-```md
+
 | sample_name            | biological_group | cell_type | time_point | time_point_description | organ  | input_template | genetic_source | R1                                                           | R2                                                           |
 | ---------------------- | ---------------- | --------- | ---------- | ---------------------- | ------ | -------------- | -------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | sample1_d27_PLASMA_S12 | animal1          | unknown   | 27         | unknown                | plasma | 10000          | dna            | /path/to/sample1_d27_PLASMA_S12_L001_R1_001.trimmed.fastq.gz | /path/to/sample1_d27_PLASMA_S12_L001_R2_001.trimmed.fastq.gz |
@@ -89,4 +88,4 @@ options:
 | sample3_d27_PLASMA_S21 | animal2          | unknown   | 27         | unknown                | plasma | 10000          | dna            | /path/to/sample3_d27_PLASMA_S21_L001_R1_001.trimmed.fastq.gz | /path/to/sample3_d27_PLASMA_S21_L001_R2_001.trimmed.fastq.gz |
 | sample4_d27_PLASMA_S22 | animal1          | unknown   | 27         | unknown                | plasma | 10000          | dna            | /path/to/sample4_d27_PLASMA_S22_L001_R1_001.trimmed.fastq.gz | /path/to/sample4_d27_PLASMA_S22_L001_R2_001.trimmed.fastq.gz |
 | sample5_d27_PLASMA_S22 | animal3          | unknown   | 27         | unknown                | plasma | 10000          | dna            | /path/to/sample5_d27_PLASMA_S5_L001_R1_001.trimmed.fastq.gz  | /path/to/sample5_d27_PLASMA_S5_L001_R2_001.trimmed.fastq.gz  |
-```
+

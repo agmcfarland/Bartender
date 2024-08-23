@@ -12,25 +12,25 @@
 ## Bartender
 
 ```md
-usage: Bartender [-h] [--output_dir OUTPUT_DIR] [--run_name RUN_NAME] [--experimental_file EXPERIMENTAL_FILE] [--stock_file STOCK_FILE] [--upstream_nucleotide_match UPSTREAM_NUCLEOTIDE_MATCH]
-                 [--downstream_nucleotide_match DOWNSTREAM_NUCLEOTIDE_MATCH] [--barcode_length BARCODE_LENGTH] [--hamming_distance HAMMING_DISTANCE] [--no_copy] [--dry]
+usage: Bartender [-h] [--output_dir] [--run_name] [--experimental_file] [--stock_file] [--upstream_nucleotide_match]
+                 [--downstream_nucleotide_match] [--barcode_length] [--hamming_distance] [--no_copy] [--dry]
 
 options:
   -h, --help            show this help message and exit
-  --output_dir OUTPUT_DIR
+  --output_dir
                         Path to output directory
   --run_name RUN_NAME   Name of the run
-  --experimental_file EXPERIMENTAL_FILE
+  --experimental_file
                         Path to experimental input csv file [None]
-  --stock_file STOCK_FILE
+  --stock_file
                         Path to stock input csv file [None]
-  --upstream_nucleotide_match UPSTREAM_NUCLEOTIDE_MATCH
+  --upstream_nucleotide_match
                         Upstream nucleotide sequence to match [TAGCATAA]
-  --downstream_nucleotide_match DOWNSTREAM_NUCLEOTIDE_MATCH
+  --downstream_nucleotide_match
                         Downstream nucleotide sequence to match [ATGGAAGAA]
-  --barcode_length BARCODE_LENGTH
+  --barcode_length
                         Length of barcode to capture [35]
-  --hamming_distance HAMMING_DISTANCE
+  --hamming_distance
                         Hamming distance to find closest potential barcode [3]
   --no_copy             Don't make a copy of the work folder prior to a run [False]
   --dry                 Print arguments and exit program [False]
@@ -39,24 +39,26 @@ options:
 ## Bartender reports
 
 ```md
-usage: BartenderReport [-h] [--run_dir RUN_DIR] [--experimental_report] [--stock_report] [--report_table_type_1] [--experimental_trend_width EXPERIMENTAL_TREND_WIDTH] [--experimental_trend_height EXPERIMENTAL_TREND_HEIGHT]
-                   [--per_experimental_group_width PER_EXPERIMENTAL_GROUP_WIDTH] [--per_experimental_group_height PER_EXPERIMENTAL_GROUP_HEIGHT] [--dry] [--Rscript_path RSCRIPT_PATH]
+usage: BartenderReport [-h] [--run_dir] [--experimental_report] [--stock_report] [--report_table_type_1] [--experimental_trend_width] [--experimental_trend_height]
+                   [--per_experimental_group_width] [--per_experimental_group_height] [--dry] [--Rscript_path]
 
 options:
   -h, --help            show this help message and exit
-  --run_dir RUN_DIR     Path to run directory [None]
+  --run_dir             Path to run directory [None]
+  --experimental_summary_table
+                        Make experimental summary table [False]
   --experimental_report
                         Make experimental report [False]
   --stock_report        Make stock report [False]
   --report_table_type_1
                         Make report table with counts [False]
-  --experimental_trend_width EXPERIMENTAL_TREND_WIDTH
+  --experimental_trend_width
                         Width [15]
-  --experimental_trend_height EXPERIMENTAL_TREND_HEIGHT
+  --experimental_trend_height
                         Height [15]
-  --per_experimental_group_width PER_EXPERIMENTAL_GROUP_WIDTH
+  --per_experimental_group_width
                         Width [15]
-  --per_experimental_group_height PER_EXPERIMENTAL_GROUP_HEIGHT
+  --per_experimental_group_height
                         Height [15]
   --dry                 Print arguments and exit program [False]
   --Rscript_path RSCRIPT_PATH

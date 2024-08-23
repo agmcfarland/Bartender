@@ -36,7 +36,7 @@ class Record:
         self._run_record_through_checks(table=self.experimental)
 
     def unique_stock_biological_groups(self):
-        return list(self.stock['biological_group'].unique())
+        return list(self.stock["biological_group"].unique())
 
     def _run_record_through_checks(self, table):
         df_check_record = table.copy(deep=True)

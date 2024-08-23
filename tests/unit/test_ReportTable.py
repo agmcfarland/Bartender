@@ -506,7 +506,7 @@ def test_pass(experimental_barcodes, experimental_record, standard_barcode_name_
     """
     python -m slipcover -m pytest -sv tests/unit/test_ReportTable.py::test_pass
     """
-    pd.set_option('display.max_columns', None)
+    pd.set_option("display.max_columns", None)
     print(experimental_barcodes)
 
     print(experimental_record)
@@ -682,49 +682,67 @@ def test_proportion_and_count_summary(
 
             with patch("Utils.ReportTable.glob") as mock_glob:
                 with patch("Utils.ReportTable.pd.read_csv") as mock_csv:
-                    with patch("Utils.ReportTable.os.path.basename") as mock_basename: #necessary for _read_in_experimental_samples
+                    with patch(
+                        "Utils.ReportTable.os.path.basename"
+                    ) as mock_basename:  # necessary for _read_in_experimental_samples
                         mock_glob.return_value = [
                             "bg1_plasma_7_not_specified_cdna_processed.csv",
                             "bg1_plasma_10_blood_vRNA_processed.csv",
                             "bg1_cd4_100_spleen_cdna_processed.csv",
-                            "bg2_plasma_0_not_specified_cdna_processed.csv"#,
-                            #"bg2_cd4_0_not_specified_not_specified_processed.csv",
+                            "bg2_plasma_0_not_specified_cdna_processed.csv"  # ,
+                            # "bg2_cd4_0_not_specified_not_specified_processed.csv",
                         ]
 
                         mock_basename.side_effect = [
                             "bg1_plasma_7_not_specified_cdna_processed.csv",
                             "bg1_plasma_10_blood_vRNA_processed.csv",
                             "bg1_cd4_100_spleen_cdna_processed.csv",
-                            "bg2_plasma_0_not_specified_cdna_processed.csv"#,
-                            #"bg2_cd4_0_not_specified_not_specified_processed.csv",
+                            "bg2_plasma_0_not_specified_cdna_processed.csv"  # ,
+                            # "bg2_cd4_0_not_specified_not_specified_processed.csv",
                         ]
 
                         mock_csv.side_effect = experimental_barcodes
 
-                        with patch.object(report_table.setup_manager.record, 'unique_stock_biological_groups', return_value=['CH505_V2', 'CH505_TF']):
-                            unique_stock_ids = report_table.setup_manager.record.unique_stock_biological_groups()
+                        with patch.object(
+                            report_table.setup_manager.record,
+                            "unique_stock_biological_groups",
+                            return_value=["CH505_V2", "CH505_TF"],
+                        ):
+                            unique_stock_ids = (
+                                report_table.setup_manager.record.unique_stock_biological_groups()
+                            )
 
                             report_table.proportion_and_count_summary()
 
-                            assert report_table.experimental_summary_table_counts.shape == (4, 11)
-                            assert report_table.experimental_summary_table_proportions.shape == (4, 11)
+                            assert (
+                                report_table.experimental_summary_table_counts.shape
+                                == (4, 11)
+                            )
+                            assert (
+                                report_table.experimental_summary_table_proportions.shape
+                                == (4, 11)
+                            )
 
-
-                            with patch.object(pd.DataFrame, 'to_csv') as mock_to_csv:
-
-                                with patch.object(report_table.setup_manager.run_paths, 'output', new = '/path/to/output'):
-
+                            with patch.object(pd.DataFrame, "to_csv") as mock_to_csv:
+                                with patch.object(
+                                    report_table.setup_manager.run_paths,
+                                    "output",
+                                    new="/path/to/output",
+                                ):
                                     report_table.write_proportion_and_count_summary()
 
                                     print(report_table.setup_manager.run_paths.output)
 
                                     # Check that to_csv was called with the correct arguments
-                                    mock_to_csv.assert_has_calls([
-                                        call('/path/to/output/experimental_summary_counts.csv', index=None),
-                                        call('/path/to/output/experimental_summary_proportion.csv', index=None)
-                                    ])
-
-
-
-
-
+                                    mock_to_csv.assert_has_calls(
+                                        [
+                                            call(
+                                                "/path/to/output/experimental_summary_counts.csv",
+                                                index=None,
+                                            ),
+                                            call(
+                                                "/path/to/output/experimental_summary_proportion.csv",
+                                                index=None,
+                                            ),
+                                        ]
+                                    )

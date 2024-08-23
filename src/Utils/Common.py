@@ -10,6 +10,7 @@ def find_subtring_match(query, patterns_subject: re.compile):
             return match.group(0)
     return None
 
+
 def hamming_distance_preset_length(string1, string2, barcode_length=35, cutoff=1):
     """
     Computes the hamming distance between two strings up until the string_distance is greater than cutoff and returns that value.

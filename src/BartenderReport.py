@@ -13,6 +13,12 @@ def parse_arguments():
         "--run_dir", type=str, default="", help="Path to run directory [None]"
     )
     parser.add_argument(
+        "--experimental_summary_table",
+        action="store_true",
+        default=False,
+        help="Make experimental summary table [False]",
+    )    
+    parser.add_argument(
         "--experimental_report",
         action="store_true",
         default=False,
@@ -79,7 +85,7 @@ def main():
         )
 
         os.system(
-            f"/usr/bin/Rscript -e \"rmarkdown::render('{experimental_report_path}', params = list(run_dir = '{args.run_dir}', experimental_trend_width = '{args.experimental_trend_width}', experimental_trend_height = '{args.experimental_trend_height}', per_experimental_group_width = '{args.per_experimental_group_width}', per_experimental_group_height = '{args.per_experimental_group_height}'), output_file='{experimental_report_output_path}')\""
+            f"{args.Rscript_path}Rscript -e \"rmarkdown::render('{experimental_report_path}', params = list(run_dir = '{args.run_dir}', experimental_trend_width = '{args.experimental_trend_width}', experimental_trend_height = '{args.experimental_trend_height}', per_experimental_group_width = '{args.per_experimental_group_width}', per_experimental_group_height = '{args.per_experimental_group_height}'), output_file='{experimental_report_output_path}')\""
         )
 
     if args.stock_report:
@@ -105,6 +111,14 @@ def main():
         report_table.make_report_table_type_1()
 
         report_table.write_report_table_type_1_to_excel()
+
+    if args.experimental_summary_table:
+        
+        report_table = ReportTable(setup_manager=SetupManager(work_dir=args.run_dir))
+        
+        report_table.proportion_and_count_summary()
+
+        report_table.write_proportion_and_count_summary()
 
 
 if __name__ == "__main__":

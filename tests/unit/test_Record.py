@@ -42,6 +42,30 @@ def test_load_records_pass(
 
             assert record.stock.equals(df_test_stock)
 
+def test_unique_stock_biological_groups_pass(
+    mock_run_paths,
+    stock_record,
+    experimental_record,
+    expected_experimental_output,
+    expected_stock_output,
+):
+    """
+    python -m slipcover -m pytest -sv tests/unit/test_Record.py::test_unique_stock_biological_groups_pass
+    """
+    with patch("pandas.read_csv") as mock_read_csv:
+        with patch("os.path.exists") as mock_path_exists:
+            record = Record(run_paths=mock_run_paths)
+
+            df_test_stock = stock_record.copy(deep=True)
+
+            mock_path_exists.side_effect = [True]
+
+            mock_read_csv.side_effect = [df_test_stock]
+
+            record.load_stock_record()
+
+            assert record.unique_stock_biological_groups() == ['group1', 'group2', 'group3']
+
 
 def test_update_records_pass(
     mock_run_paths,

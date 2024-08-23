@@ -1,6 +1,14 @@
 import numpy as np
 import multiprocessing as mp
+import re
 
+
+def find_subtring_match(query, patterns_subject: re.compile):
+    for pattern in patterns_subject:
+        match = pattern.search(query)
+        if match:
+            return match.group(0)
+    return None
 
 def hamming_distance_preset_length(string1, string2, barcode_length=35, cutoff=1):
     """

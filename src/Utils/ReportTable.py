@@ -36,75 +36,117 @@ class ReportTable:
         )
 
     def proportion_and_count_summary(self):
-
         self._read_in_experimental_samples()
 
         self._map_standard_barcode_names_to_barcodes()
 
         unique_stock_ids = self.setup_manager.record.unique_stock_biological_groups()
 
-        unique_stock_ids.append('stock')
+        unique_stock_ids.append("stock")
 
-        unique_stock_ids.append('experimental')
+        unique_stock_ids.append("experimental")
 
         unique_stock_ids_regex = [re.compile(stock_id) for stock_id in unique_stock_ids]
 
-        self.experimental_table['stock_source'] = self.experimental_table['standard_barcode_name'].apply(lambda x: find_subtring_match(x, unique_stock_ids_regex))
+        self.experimental_table["stock_source"] = self.experimental_table[
+            "standard_barcode_name"
+        ].apply(lambda x: find_subtring_match(x, unique_stock_ids_regex))
 
-        self.experimental_table = self.experimental_table[self.experimental_table['trusted_proportion'] > 0]
+        self.experimental_table = self.experimental_table[
+            self.experimental_table["trusted_proportion"] > 0
+        ]
 
-        self.experimental_summary_table_counts = self._experimental_summary_table(proportion = False)
+        self.experimental_summary_table_counts = self._experimental_summary_table(
+            proportion=False
+        )
 
-        self.experimental_summary_table_proportions = self._experimental_summary_table(proportion = True)
+        self.experimental_summary_table_proportions = self._experimental_summary_table(
+            proportion=True
+        )
 
     def write_proportion_and_count_summary(self):
-        self.experimental_summary_table_counts.to_csv(pjoin(self.setup_manager.run_paths.output, 'experimental_summary_counts.csv'), index = None)
-        self.experimental_summary_table_proportions.to_csv(pjoin(self.setup_manager.run_paths.output, 'experimental_summary_proportion.csv'), index = None)
-
+        self.experimental_summary_table_counts.to_csv(
+            pjoin(
+                self.setup_manager.run_paths.output, "experimental_summary_counts.csv"
+            ),
+            index=None,
+        )
+        self.experimental_summary_table_proportions.to_csv(
+            pjoin(
+                self.setup_manager.run_paths.output,
+                "experimental_summary_proportion.csv",
+            ),
+            index=None,
+        )
 
     def _experimental_summary_table(self, proportion: bool = False):
         """
         Create summary table at the level of each unique stock, experiment only, shared stock only, and total_sum
         """
 
-        summary = self.experimental_table.groupby(['file_tag', 'stock_source'])['total'].sum().reset_index()
+        summary = (
+            self.experimental_table.groupby(["file_tag", "stock_source"])["total"]
+            .sum()
+            .reset_index()
+        )
 
-        summary.rename(columns={'total': 'total_sum'}, inplace=True)
+        summary.rename(columns={"total": "total_sum"}, inplace=True)
 
-        summary = summary.pivot(index='file_tag', columns='stock_source', values='total_sum').reset_index()
+        summary = summary.pivot(
+            index="file_tag", columns="stock_source", values="total_sum"
+        ).reset_index()
 
         # Fill any NaN values with 0 if needed
         summary.fillna(0, inplace=True)
 
         summary.columns.name = None
 
-        stock_total = summary.loc[:, ~summary.columns.isin(['file_tag', 'experimental'])].sum(axis=1)
+        stock_total = summary.loc[
+            :, ~summary.columns.isin(["file_tag", "experimental"])
+        ].sum(axis=1)
 
-        summary['stock_total'] = stock_total
+        summary["stock_total"] = stock_total
 
-        all_total = summary.loc[:, summary.columns.isin(['stock_total', 'experimental'])].sum(axis=1)
+        all_total = summary.loc[
+            :, summary.columns.isin(["stock_total", "experimental"])
+        ].sum(axis=1)
 
-        summary['all_total'] = all_total
+        summary["all_total"] = all_total
 
-        summary = summary.rename(columns = {'stock': 'shared_stock', 'experimental': 'experimental_only'})
+        summary = summary.rename(
+            columns={"stock": "shared_stock", "experimental": "experimental_only"}
+        )
 
         if proportion:
+            columns_to_normalize = summary.columns.difference(["file_tag"])
 
-            columns_to_normalize = summary.columns.difference(['file_tag'])
+            summary[columns_to_normalize] = summary[columns_to_normalize].div(
+                summary["all_total"], axis=0
+            )
 
-            summary[columns_to_normalize] = summary[columns_to_normalize].div(summary['all_total'], axis=0)
+        df_metadata = self.setup_manager.record.experimental[
+            [
+                "standard_sample_name",
+                "biological_group",
+                "cell_type",
+                "time_point",
+                "organ",
+                "genetic_source",
+            ]
+        ].drop_duplicates()
 
-        df_metadata = self.setup_manager.record.experimental[['standard_sample_name', 'biological_group', 'cell_type', 'time_point', 'organ', 'genetic_source']].drop_duplicates()
+        summary = df_metadata.merge(
+            summary, left_on="standard_sample_name", right_on="file_tag"
+        )
 
-        summary = df_metadata.merge(summary, left_on = 'standard_sample_name', right_on = 'file_tag')
+        summary = summary.sort_values(
+            ["biological_group", "time_point", "cell_type", "organ", "genetic_source"],
+            ascending=[True, True, False, True, False],
+        )
 
-        summary = summary.sort_values(["biological_group", "time_point", "cell_type", "organ", "genetic_source"], ascending=[True, True, False, True, False])
-
-        summary = summary.drop(columns = ['file_tag'])
+        summary = summary.drop(columns=["file_tag"])
 
         return summary
-
-
 
     def _make_condensed_experimental_record(self, biological_group):
         """

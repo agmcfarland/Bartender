@@ -17,7 +17,7 @@ def parse_arguments():
         action="store_true",
         default=False,
         help="Make experimental summary table [False]",
-    )    
+    )
     parser.add_argument(
         "--experimental_report",
         action="store_true",
@@ -113,9 +113,8 @@ def main():
         report_table.write_report_table_type_1_to_excel()
 
     if args.experimental_summary_table:
-        
         report_table = ReportTable(setup_manager=SetupManager(work_dir=args.run_dir))
-        
+
         report_table.proportion_and_count_summary()
 
         report_table.write_proportion_and_count_summary()

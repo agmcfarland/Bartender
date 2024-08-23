@@ -42,6 +42,7 @@ def test_load_records_pass(
 
             assert record.stock.equals(df_test_stock)
 
+
 def test_unique_stock_biological_groups_pass(
     mock_run_paths,
     stock_record,
@@ -64,7 +65,11 @@ def test_unique_stock_biological_groups_pass(
 
             record.load_stock_record()
 
-            assert record.unique_stock_biological_groups() == ['group1', 'group2', 'group3']
+            assert record.unique_stock_biological_groups() == [
+                "group1",
+                "group2",
+                "group3",
+            ]
 
 
 def test_update_records_pass(

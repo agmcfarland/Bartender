@@ -193,32 +193,38 @@ class ReportTable:
         """
 
         for count_table in self.type_1_experiment_table_count:
-            
             # copy count table, ignore metadata rows
-            df_counts = count_table.copy(deep = True).loc[9:]
+            df_counts = count_table.copy(deep=True).loc[9:]
 
             # summed totals
-            column_sums = df_counts.loc[:, ~df_counts.columns.isin(['standard_barcode_name', 'barcode'])].sum()
+            column_sums = df_counts.loc[
+                :, ~df_counts.columns.isin(["standard_barcode_name", "barcode"])
+            ].sum()
             # column_sums = df_counts.iloc[:, 2:].sum()
 
             # each barcode divided by respective sumemd total
-            df_proportion = df_counts.loc[:, ~df_counts.columns.isin(['standard_barcode_name', 'barcode'])].div(column_sums, axis=1)
+            df_proportion = df_counts.loc[
+                :, ~df_counts.columns.isin(["standard_barcode_name", "barcode"])
+            ].div(column_sums, axis=1)
 
             # add the initial two columns back to the dataframe
-            df_proportion = pd.concat([df_counts[['standard_barcode_name', 'barcode']], df_proportion], axis=1)
+            df_proportion = pd.concat(
+                [df_counts[["standard_barcode_name", "barcode"]], df_proportion], axis=1
+            )
 
-            # get the metadata rows 
+            # get the metadata rows
             df_metadata = count_table.iloc[:9]
 
             # add the metadata back to the dataframe
-            df_combined = pd.concat([df_metadata, df_proportion], axis = 0, ignore_index = True)
+            df_combined = pd.concat(
+                [df_metadata, df_proportion], axis=0, ignore_index=True
+            )
 
             self.type_1_experiment_table_proportion.append(df_combined)
 
-
     def make_report_table_type_1_counts(self):
         """
-        Assigns self.type_1_experiment_table a list. Each item is a pandas dataframe 
+        Assigns self.type_1_experiment_table a list. Each item is a pandas dataframe
         in the type_1 format
         """
         pd.options.mode.chained_assignment = None
@@ -342,15 +348,21 @@ class ReportTable:
         Writes either count or proportion type 1 tables to excel
         """
         table_type = {
-            'count': {'filename': 'barcode_report_table_type_1_count.xlsx', 'data_list': self.type_1_experiment_table_count},
-            'proportion': {'filename': 'barcode_report_table_type_1_proportion.xlsx', 'data_list': self.type_1_experiment_table_proportion},
+            "count": {
+                "filename": "barcode_report_table_type_1_count.xlsx",
+                "data_list": self.type_1_experiment_table_count,
+            },
+            "proportion": {
+                "filename": "barcode_report_table_type_1_proportion.xlsx",
+                "data_list": self.type_1_experiment_table_proportion,
+            },
         }
 
         try:
             os.remove(
                 pjoin(
                     self.setup_manager.run_paths.output,
-                    table_type[table_to_process]['filename'],
+                    table_type[table_to_process]["filename"],
                 )
             )
         except:
@@ -358,10 +370,13 @@ class ReportTable:
 
         with pd.ExcelWriter(
             pjoin(
-                self.setup_manager.run_paths.output, table_type[table_to_process]['filename']
+                self.setup_manager.run_paths.output,
+                table_type[table_to_process]["filename"],
             )
         ) as writer:
-            for table in table_type[table_to_process]['data_list']: #self.type_1_experiment_table:
+            for table in table_type[table_to_process][
+                "data_list"
+            ]:  # self.type_1_experiment_table:
                 biological_group = table.iloc[0, 0]
 
                 table.to_excel(

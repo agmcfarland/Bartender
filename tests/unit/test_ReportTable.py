@@ -654,18 +654,27 @@ def test_make_report_table_type_1(
 
                         assert len(report_table.type_1_experiment_table_count) == 2
 
-                        assert report_table.type_1_experiment_table_count[0].shape == (15, 5)
+                        assert report_table.type_1_experiment_table_count[0].shape == (
+                            15,
+                            5,
+                        )
 
-                        assert report_table.type_1_experiment_table_count[1].shape == (18, 4)
-
+                        assert report_table.type_1_experiment_table_count[1].shape == (
+                            18,
+                            4,
+                        )
 
                         report_table.transform_table_type_1_to_proportions()
 
                         assert len(report_table.type_1_experiment_table_proportion) == 2
 
-                        assert report_table.type_1_experiment_table_proportion[0].shape == (15, 5)
+                        assert report_table.type_1_experiment_table_proportion[
+                            0
+                        ].shape == (15, 5)
 
-                        assert report_table.type_1_experiment_table_proportion[1].shape == (18, 4)
+                        assert report_table.type_1_experiment_table_proportion[
+                            1
+                        ].shape == (18, 4)
 
 
 def test_proportion_and_count_summary(
@@ -755,10 +764,18 @@ def test_proportion_and_count_summary(
                                             ),
                                         ]
                                     )
-                                    mock_to_csv.assert_has_calls([
-                                        call('/path/to/output/experimental_summary_counts.csv', index=None),
-                                        call('/path/to/output/experimental_summary_proportion.csv', index=None)
-                                    ])
+                                    mock_to_csv.assert_has_calls(
+                                        [
+                                            call(
+                                                "/path/to/output/experimental_summary_counts.csv",
+                                                index=None,
+                                            ),
+                                            call(
+                                                "/path/to/output/experimental_summary_proportion.csv",
+                                                index=None,
+                                            ),
+                                        ]
+                                    )
 
 
 @pytest.fixture
@@ -768,13 +785,17 @@ def setup_manager_mock():
     mock.run_paths.output = "/fake/output/path"
     return mock
 
+
 @pytest.fixture
 def report_table_instance(setup_manager_mock):
     """Instance of ReportTable with a mocked SetupManager."""
     return ReportTable(setup_manager_mock)
 
+
 @patch("Utils.ReportTable.pd.ExcelWriter")
-def test_write_report_table_type_1_to_excel_count(mock_excel_writer, report_table_instance):
+def test_write_report_table_type_1_to_excel_count(
+    mock_excel_writer, report_table_instance
+):
     """
     python -m slipcover -m pytest -sv tests/unit/test_ReportTable.py::test_write_report_table_type_1_to_excel_count
     """
@@ -782,18 +803,23 @@ def test_write_report_table_type_1_to_excel_count(mock_excel_writer, report_tabl
     # Mocking data for type_1_experiment_table_count
     mock_table = MagicMock(spec=pd.DataFrame)
     report_table_instance.type_1_experiment_table_count = [mock_table]
-    
+
     # Call the method
     report_table_instance.write_report_table_type_1_to_excel("count")
-    
+
     # Ensure pd.ExcelWriter is called with the correct file path
-    mock_excel_writer.assert_called_once_with("/fake/output/path/barcode_report_table_type_1_count.xlsx")
-    
+    mock_excel_writer.assert_called_once_with(
+        "/fake/output/path/barcode_report_table_type_1_count.xlsx"
+    )
+
     # Ensure the `to_excel` method is called on the DataFrame
     mock_table.to_excel.assert_called_once()
 
+
 @patch("Utils.ReportTable.pd.ExcelWriter")
-def test_write_report_table_type_1_to_excel_proportion(mock_excel_writer, report_table_instance):
+def test_write_report_table_type_1_to_excel_proportion(
+    mock_excel_writer, report_table_instance
+):
     """
     python -m slipcover -m pytest -sv tests/unit/test_ReportTable.py::test_write_report_table_type_1_to_excel_proportion
     """
@@ -801,13 +827,14 @@ def test_write_report_table_type_1_to_excel_proportion(mock_excel_writer, report
     # Mocking data for type_1_experiment_table_count
     mock_table = MagicMock(spec=pd.DataFrame)
     report_table_instance.type_1_experiment_table_proportion = [mock_table]
-    
+
     # Call the method
     report_table_instance.write_report_table_type_1_to_excel("proportion")
-    
+
     # Ensure pd.ExcelWriter is called with the correct file path
-    mock_excel_writer.assert_called_once_with("/fake/output/path/barcode_report_table_type_1_proportion.xlsx")
-    
+    mock_excel_writer.assert_called_once_with(
+        "/fake/output/path/barcode_report_table_type_1_proportion.xlsx"
+    )
+
     # Ensure the `to_excel` method is called on the DataFrame
     mock_table.to_excel.assert_called_once()
-

@@ -108,9 +108,13 @@ def main():
 
         report_table = ReportTable(setup_manager=SetupManager(work_dir=args.run_dir))
 
-        report_table.make_report_table_type_1()
+        report_table.make_report_table_type_1_counts()
 
-        report_table.write_report_table_type_1_to_excel()
+        report_table.write_report_table_type_1_to_excel('count')
+
+        report_table.transform_table_type_1_to_proportions()
+
+        report_table.write_report_table_type_1_to_excel('proportion')
 
     if args.experimental_summary_table:
         report_table = ReportTable(setup_manager=SetupManager(work_dir=args.run_dir))

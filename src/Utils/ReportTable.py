@@ -11,6 +11,8 @@ class ReportTable:
     def __init__(self, setup_manager):
         self.setup_manager = setup_manager
         self.experimental_table = pd.DataFrame()
+        self.type_1_experiment_table_count = []
+        self.type_1_experiment_table_proportion = []
 
     def _load_standard_barcode_names(self):
         """ """
@@ -184,14 +186,46 @@ class ReportTable:
 
         return df_bg_record
 
-    def make_report_table_type_1(self):
+    def transform_table_type_1_to_proportions(self):
+        """
+        Takes as input self.type_1_experiment_table_count from make_report_table_type_1()
+        and converts counts to proportions and stores in self.type_1_experiment_table_proportion
+        """
+
+        for count_table in self.type_1_experiment_table_count:
+            
+            # copy count table, ignore metadata rows
+            df_counts = count_table.copy(deep = True).loc[9:]
+
+            # summed totals
+            column_sums = df_counts.loc[:, ~df_counts.columns.isin(['standard_barcode_name', 'barcode'])].sum()
+            # column_sums = df_counts.iloc[:, 2:].sum()
+
+            # each barcode divided by respective sumemd total
+            df_proportion = df_counts.loc[:, ~df_counts.columns.isin(['standard_barcode_name', 'barcode'])].div(column_sums, axis=1)
+
+            # add the initial two columns back to the dataframe
+            df_proportion = pd.concat([df_counts[['standard_barcode_name', 'barcode']], df_proportion], axis=1)
+
+            # get the metadata rows 
+            df_metadata = count_table.iloc[:9]
+
+            # add the metadata back to the dataframe
+            df_combined = pd.concat([df_metadata, df_proportion], axis = 0, ignore_index = True)
+
+            self.type_1_experiment_table_proportion.append(df_combined)
+
+
+    def make_report_table_type_1_counts(self):
+        """
+        Assigns self.type_1_experiment_table a list. Each item is a pandas dataframe 
+        in the type_1 format
+        """
         pd.options.mode.chained_assignment = None
 
         self._read_in_experimental_samples()
 
         self._map_standard_barcode_names_to_barcodes()
-
-        self.type_1_experiment_table = []
 
         for biological_group_ in (
             self.setup_manager.record.experimental["biological_group"].unique().tolist()
@@ -301,14 +335,22 @@ class ReportTable:
                 [self.combined_details_counts, self.counts], axis=0, ignore_index=True
             )
 
-            self.type_1_experiment_table.append(self.combined_details_counts)
+            self.type_1_experiment_table_count.append(self.combined_details_counts)
 
-    def write_report_table_type_1_to_excel(self):
+    def write_report_table_type_1_to_excel(self, table_to_process: str):
+        """
+        Writes either count or proportion type 1 tables to excel
+        """
+        table_type = {
+            'count': {'filename': 'barcode_report_table_type_1_count.xlsx', 'data_list': self.type_1_experiment_table_count},
+            'proportion': {'filename': 'barcode_report_table_type_1_proportion.xlsx', 'data_list': self.type_1_experiment_table_proportion},
+        }
+
         try:
             os.remove(
                 pjoin(
                     self.setup_manager.run_paths.output,
-                    "barcode_report_table_type_1.xlsx",
+                    table_type[table_to_process]['filename'],
                 )
             )
         except:
@@ -316,10 +358,10 @@ class ReportTable:
 
         with pd.ExcelWriter(
             pjoin(
-                self.setup_manager.run_paths.output, "barcode_report_table_type_1.xlsx"
+                self.setup_manager.run_paths.output, table_type[table_to_process]['filename']
             )
         ) as writer:
-            for table in self.type_1_experiment_table:
+            for table in table_type[table_to_process]['data_list']: #self.type_1_experiment_table:
                 biological_group = table.iloc[0, 0]
 
                 table.to_excel(

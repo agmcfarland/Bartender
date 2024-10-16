@@ -36,6 +36,9 @@ library(cowplot)
 ### Troubleshooting inputs start # hash out params in the yaml portion of Rmd to take effect
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-R21_tulane/bartender_output')
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_2_0/bartender_output')
+# run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/2_bnab_at_arti_animal_samples_stock')
+# run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-SHIV_D_CNS/bartender_run_stock_and_experimental')
+# 
 # runs_paths <- data.frame(
 #   'base' = run_dir,
 #   'record' = file.path(run_dir, 'record', 'experimental.csv'),
@@ -106,7 +109,7 @@ rm(list = list_non_global_variables(ls(), keep_global_vars))
 ```
 
 
-## Barcodes trend
+# Barcodes trend
 
 Samples are displayed in a heatmap, with the biological group on the Y axis and timepoint/cell type/organ/genetic material on the X-axis. If any of these are not available, they are listed as `not_specified`.
 
@@ -207,7 +210,7 @@ ggplot(df_plot %>%
 
 ```
 
-## Barcodes detected by presence in stock
+# Barcodes detected by presence in stock
 
 This section shows proportion of barcodes, the number of unique barcodes, and the total abundance of barcodes for each biological group according to whether they are detected in stock or not.
 
@@ -294,11 +297,11 @@ for (biological_group_ in base::unique(df_record$biological_group)) {
 
 ```
 
-## Barcodes detected by stock source
+# Barcodes detected by stock source
 
 This section shows proportion of barcodes, the number of unique barcodes, and the total abundance of barcodes for each biological group according to a more refined view of the stock sourcing. Here, barcodes are color coded by what specific stock they were found in. If a barcode is not found in any stock, they are labeled as "experimental". If they are found in two or more different stocks then they are labeled "stock overlap". Otherwise, they are labeled with the name of stock.
 
-```{r, per_experimental_group_specific_stock_source, message=FALSE, warning=FALSE, echo=FALSE, out.width = '100%',fig.align="center", fig.width=dynamic_figure_manager$per_experimental_group_width, fig.height=dynamic_figure_manager$per_experimental_group_height}
+```{r, per_experimental_group_specific_stock_source, message=FALSE, warning=FALSE, echo=FALSE, out.width = '100%',fig.align="center", fig.width=15, fig.height=15}
 rm(list = list_non_global_variables(ls(), keep_global_vars))
 
 df_barcode_source <- merge(
@@ -313,7 +316,7 @@ df_barcode_source <- df_barcode_source %>%
 
 if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_filtered.csv'))$biological_group)) > 1) {
   
-  for (biological_group_ in base::unique(df_record$biological_group)) {
+  for (biological_group_ in base::unique(df_record$biological_group)) {break}
   
     df_bg <- do.call(rbind, lapply(Sys.glob(file.path(runs_paths$experimental, paste0(biological_group_, '*_processed.csv'))), function(file_) {
       df_sample <- read.csv(file_) %>%
@@ -401,6 +404,5 @@ if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_fil
 } else {
   print('Only one stock source used. This section will not be processed.')
 }
-  }
 
 ```

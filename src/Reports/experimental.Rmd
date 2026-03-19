@@ -37,7 +37,8 @@ library(cowplot)
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-R21_tulane/bartender_output')
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_2_0/bartender_output')
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/2_bnab_at_arti_animal_samples_stock')
-# run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-SHIV_D_CNS/bartender_run_stock_and_experimental')
+# run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/bartender_run_stock_and_experimental')
+# run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/bartender_run_stock_and_experimental_group1_and_group2')
 # 
 # runs_paths <- data.frame(
 #   'base' = run_dir,
@@ -101,6 +102,35 @@ list_non_global_variables <- function(all_variables, global_variables_to_keep) {
   return(setdiff(all_variables, global_variables_to_keep))
 }
 
+subchunkify <- function(g, fig_height=7, fig_width=5) {
+  g_deparsed <- paste0(deparse(
+    function() {g}
+  ), collapse = '')
+
+  sub_chunk <- paste0("
+  `","``{r sub_chunk_", floor(runif(1) * 10000), ", fig.height=",
+   fig_height, ", fig.width=", fig_width, ", echo=FALSE, warning=FALSE, message=FALSE}",
+  "\n(", 
+    g_deparsed
+    , ")()",
+  "\n`","``
+  ")
+
+  cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
+}
+
+format_thousands <- function(x, digits = 1) {
+  sapply(x, function(num) {
+    if (abs(num) >= 1000) {
+      paste0(round(num / 1000, digits), "k")
+    } else {
+      as.character(num)
+    }
+  })
+}
+
+
+
 internal_functions <- unlist(lapply(lsf.str(), function(x){x[1]}))
 
 keep_global_vars <- c(keep_global_vars, internal_functions)
@@ -113,9 +143,27 @@ rm(list = list_non_global_variables(ls(), keep_global_vars))
 
 Samples are displayed in a heatmap, with the biological group on the Y axis and timepoint/cell type/organ/genetic material on the X-axis. If any of these are not available, they are listed as `not_specified`.
 
-Each tile in the heatmap contains the `proportion of barcodes sourced to the stock`, followed by `unique barcodes found in stock` | `total barcodes found in stock`, followed by `unique barcodes not found in stock` | `total barcodes not found in stock`. Each tile is colored by the proportion of barcodes found in stock.
+Each tile in the heatmap has the following layout:
 
-```{r, experimental_trend, message=FALSE, warning=FALSE, echo=FALSE, out.width = '100%',fig.align="center", fig.width = 15, fig.height=15}
+| Percentage of barcodes sourced to the stock |                      |
+|---------------------------------------------|----------------------|
+| Unique barcodes found in stock              \|| Total barcodes found in stock  |
+| Unique barcodes not found in stock          \|| Total barcodes not found in stock |
+
+For clarity of reading, all numbers are rounded to the nearest whole number. Numbers greater than a thousand have a K appended to them.
+
+
+<!-- `percentage of barcodes sourced to the stock` -->
+
+<!-- `unique barcodes found in stock` | `total barcodes found in stock` -->
+
+<!-- `unique barcodes not found in stock` | `total barcodes not found in stock` -->
+
+Each tile is colored by the proportion of barcodes found in stock.
+
+For mixed stocks, this only provides the statistic for a barcode being in **any** stock. In the plots below there are additional deconstructions of stock sourcing.
+
+```{r, experimental_trend, message=FALSE, warning=FALSE, echo=FALSE, results='asis'}
 rm(list = list_non_global_variables(ls(), keep_global_vars))
 
 df_bg <- do.call(rbind, lapply(Sys.glob(file.path(runs_paths$experimental, '*_processed.csv')), function(file_) {
@@ -181,7 +229,13 @@ df_plot <- df_plot %>%
 df_plot <- get_unique_experimental_treatments(df_plot)
 
 df_plot_text <- df_plot %>%
-  dplyr::mutate(tile_label = ifelse(in_stock == TRUE, paste(round(trusted_proportion, 2), '\n', scales::comma(unique), '|', scales::comma(total)), paste(scales::comma(unique), '|', scales::comma(total)))) %>%
+  # dplyr::mutate(
+  #   tile_label = ifelse(in_stock == TRUE, paste(round(trusted_proportion, 2), '\n', scales::comma(unique), '|', scales::comma(total)), paste(scales::comma(unique), '|', scales::comma(total)))
+  #   ) %>%
+  # 
+  dplyr::mutate(
+    tile_label = ifelse(in_stock == TRUE, paste(100 * round(trusted_proportion, 2), '\n', format_thousands(unique, 0), '|', format_thousands(total, 0)), paste(format_thousands(unique, 0), '|', format_thousands(total, 0)))
+    ) %>%
   dplyr::group_by(standard_sample_name) %>%
   dplyr::arrange(dplyr::desc(in_stock)) %>%
   dplyr::mutate(tile_label2 = paste(tile_label, collapse = '\n')) %>%
@@ -190,7 +244,7 @@ df_plot_text <- df_plot %>%
   base::unique()
 
 
-ggplot(df_plot %>%
+p1 <- ggplot(df_plot %>%
          dplyr::filter(in_stock == TRUE),
        aes(x = experimental_treatment_id, y = biological_group, fill = trusted_proportion)) +
   ggh4x::facet_nested(biological_group ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free', switch = 'y') +
@@ -208,101 +262,115 @@ ggplot(df_plot %>%
                       limits = c(0, 1), na.value = 'white') +
   labs(fill = 'proportion in stock')
 
-```
+fig_width_ <- p1$data %>% dplyr::select(time_point, cell_type, organ, genetic_source) %>%
+  base::unique() %>% nrow()
 
-# Barcodes detected by presence in stock
+fig_width_ <- (fig_width_/1.5) + 10 #sapply(seq(1, 50), function(x) {(x /1.5) + 10})
 
-This section shows proportion of barcodes, the number of unique barcodes, and the total abundance of barcodes for each biological group according to whether they are detected in stock or not.
+fig_height_ <- p1$data %>% dplyr::select(biological_group) %>%
+  base::unique() %>% nrow()
 
-```{r, per_experimental_group, message=FALSE, warning=FALSE, echo=FALSE, out.width = '100%',fig.align="center", fig.width=dynamic_figure_manager$per_experimental_group_width, fig.height=dynamic_figure_manager$per_experimental_group_height}
-rm(list = list_non_global_variables(ls(), keep_global_vars))
+fig_height_ <- (fig_height_/1.5)+5 #sapply(seq(1, 50), function(x) {(x /1.5) + 5})
 
-for (biological_group_ in base::unique(df_record$biological_group)) {
-
-  df_bg <- do.call(rbind, lapply(Sys.glob(file.path(runs_paths$experimental, paste0(biological_group_, '*_processed.csv'))), function(file_) {
-    df_sample <- read.csv(file_) %>%
-      dplyr::mutate(standard_sample_name = stringr::str_replace(basename(file_), '_processed.csv', ''))
-
-    return(df_sample)
-  })
-  )
-  
-  df_plot <- merge(df_bg, df_record, by = 'standard_sample_name')
-  
-  df_plot <- get_unique_experimental_treatments(df_plot)
-
-  df_plot <- df_plot %>%
-    dplyr::arrange(time_point) %>%
-    dplyr::filter(trusted_proportion > 0) %>%
-    dplyr::mutate(in_stock = ifelse(instock_threshold_check == 'pass', TRUE, FALSE))
-
-
-  instock_fill_colors <- c('orange', 'lightblue')
-  names(instock_fill_colors) <- c(FALSE, TRUE)
-
-  plot_theme_ <- function(){
-    theme_classic() +
-    theme(
-      strip.text = element_text(size = 15),
-      axis.text.y = element_text(size = 15),
-      axis.title.y = element_text(size = 15),
-      axis.text.x = element_blank(),
-      axis.title.x = element_blank(),
-      plot.title = element_text(size = 15),
-      legend.position = 'bottom'
-    )
-  }
-
-  p1 <- ggplot(df_plot,
-         aes(x = standard_sample_name, y = trusted_proportion, fill = in_stock)) +
-    ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') +
-    geom_bar(stat = 'identity', position = position_stack(), width = 1) +
-    plot_theme_() +
-    scale_y_continuous(expand = c(0, 0, 0.1, 0)) +
-    scale_x_discrete(expand = c(0, 0, 0, 0)) +
-    labs(fill = 'in stock', y = 'proportion') +
-    scale_fill_manual(values = instock_fill_colors) +
-    ggtitle(label = paste(biological_group_, 'proportion barcodes'))
-
-  p2 <- ggplot(df_plot,
-         aes(x = standard_sample_name, y = total, fill = in_stock)) +
-    ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') +
-    geom_bar(stat = 'identity', position = position_stack(), width = 1) +
-    plot_theme_() +
-    scale_y_continuous(expand = c(0, 0, 0.1, 0)) +
-    scale_x_discrete(expand = c(0, 0, 0, 0)) +
-    labs(fill = 'in stock', y = 'count') +
-    scale_fill_manual(values = instock_fill_colors) +
-    ggtitle(label = paste(biological_group_, 'total barcodes'))
-
-  p3 <- ggplot(df_plot %>%
-           dplyr::mutate(total = 1),
-         aes(x = standard_sample_name, y = total, fill = in_stock)) +
-    ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') +
-    geom_bar(stat = 'identity', position = position_stack(), width = 1) +
-    plot_theme_() +
-    scale_y_continuous(expand = c(0, 0, 0.1, 0)) +
-    scale_x_discrete(expand = c(0, 0, 0, 0)) +
-    labs(fill = 'in stock', y = 'count') +
-    scale_fill_manual(values = instock_fill_colors) +
-    ggtitle(label = paste(biological_group_, 'unique barcodes'))
-
-  print(p1)
-
-  print(p2)
-
-  print(p3)
-
-  }
+subchunkify(p1, fig_width = fig_width_, fig_height = fig_height_)
 
 ```
+
+<!-- # Barcodes detected by presence in stock -->
+
+<!-- This section shows proportion of barcodes, the number of unique barcodes, and the total abundance of barcodes for each biological group according to whether they are detected in stock or not. -->
+
+<!-- ```{r, per_experimental_group, message=FALSE, warning=FALSE, echo=FALSE, out.width = '100%',fig.align="center", fig.width=dynamic_figure_manager$per_experimental_group_width, fig.height=dynamic_figure_manager$per_experimental_group_height} -->
+<!-- rm(list = list_non_global_variables(ls(), keep_global_vars)) -->
+
+<!-- for (biological_group_ in base::unique(df_record$biological_group)) { -->
+
+<!--   df_bg <- do.call(rbind, lapply(Sys.glob(file.path(runs_paths$experimental, paste0(biological_group_, '*_processed.csv'))), function(file_) { -->
+<!--     df_sample <- read.csv(file_) %>% -->
+<!--       dplyr::mutate(standard_sample_name = stringr::str_replace(basename(file_), '_processed.csv', '')) -->
+
+<!--     return(df_sample) -->
+<!--   }) -->
+<!--   ) -->
+
+<!--   df_plot <- merge(df_bg, df_record, by = 'standard_sample_name') -->
+
+<!--   df_plot <- get_unique_experimental_treatments(df_plot) -->
+
+<!--   df_plot <- df_plot %>% -->
+<!--     dplyr::arrange(time_point) %>% -->
+<!--     dplyr::filter(trusted_proportion > 0) %>% -->
+<!--     dplyr::mutate(in_stock = ifelse(instock_threshold_check == 'pass', TRUE, FALSE)) -->
+
+
+<!--   instock_fill_colors <- c('orange', 'lightblue') -->
+<!--   names(instock_fill_colors) <- c(FALSE, TRUE) -->
+
+<!--   plot_theme_ <- function(){ -->
+<!--     theme_classic() + -->
+<!--     theme( -->
+<!--       strip.text = element_text(size = 15), -->
+<!--       axis.text.y = element_text(size = 15), -->
+<!--       axis.title.y = element_text(size = 15), -->
+<!--       axis.text.x = element_blank(), -->
+<!--       axis.title.x = element_blank(), -->
+<!--       plot.title = element_text(size = 15), -->
+<!--       legend.position = 'bottom' -->
+<!--     ) -->
+<!--   } -->
+
+<!--   p1 <- ggplot(df_plot, -->
+<!--          aes(x = standard_sample_name, y = trusted_proportion, fill = in_stock)) + -->
+<!--     ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') + -->
+<!--     geom_bar(stat = 'identity', position = position_stack(), width = 1) + -->
+<!--     plot_theme_() + -->
+<!--     scale_y_continuous(expand = c(0, 0, 0.1, 0)) + -->
+<!--     scale_x_discrete(expand = c(0, 0, 0, 0)) + -->
+<!--     labs(fill = 'in stock', y = 'proportion') + -->
+<!--     scale_fill_manual(values = instock_fill_colors) + -->
+<!--     ggtitle(label = paste(biological_group_, 'proportion barcodes')) -->
+
+<!--   p2 <- ggplot(df_plot, -->
+<!--          aes(x = standard_sample_name, y = total, fill = in_stock)) + -->
+<!--     ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') + -->
+<!--     geom_bar(stat = 'identity', position = position_stack(), width = 1) + -->
+<!--     plot_theme_() + -->
+<!--     scale_y_continuous(expand = c(0, 0, 0.1, 0)) + -->
+<!--     scale_x_discrete(expand = c(0, 0, 0, 0)) + -->
+<!--     labs(fill = 'in stock', y = 'count') + -->
+<!--     scale_fill_manual(values = instock_fill_colors) + -->
+<!--     ggtitle(label = paste(biological_group_, 'total barcodes')) -->
+
+<!--   p3 <- ggplot(df_plot %>% -->
+<!--            dplyr::mutate(total = 1), -->
+<!--          aes(x = standard_sample_name, y = total, fill = in_stock)) + -->
+<!--     ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') + -->
+<!--     geom_bar(stat = 'identity', position = position_stack(), width = 1) + -->
+<!--     plot_theme_() + -->
+<!--     scale_y_continuous(expand = c(0, 0, 0.1, 0)) + -->
+<!--     scale_x_discrete(expand = c(0, 0, 0, 0)) + -->
+<!--     labs(fill = 'in stock', y = 'count') + -->
+<!--     scale_fill_manual(values = instock_fill_colors) + -->
+<!--     ggtitle(label = paste(biological_group_, 'unique barcodes')) -->
+
+<!--   print(p1) -->
+
+<!--   print(p2) -->
+
+<!--   print(p3) -->
+
+<!--   } -->
+
+<!-- ``` -->
 
 # Barcodes detected by stock source
 
 This section shows proportion of barcodes, the number of unique barcodes, and the total abundance of barcodes for each biological group according to a more refined view of the stock sourcing. Here, barcodes are color coded by what specific stock they were found in. If a barcode is not found in any stock, they are labeled as "experimental". If they are found in two or more different stocks then they are labeled "stock overlap". Otherwise, they are labeled with the name of stock.
 
-```{r, per_experimental_group_specific_stock_source, message=FALSE, warning=FALSE, echo=FALSE, out.width = '100%',fig.align="center", fig.width=15, fig.height=15}
+```{r, per_experimental_group_specific_stock_source, message=FALSE, warning=FALSE, echo=FALSE,fig.align="center", fig.width=6, fig.height=6}
 rm(list = list_non_global_variables(ls(), keep_global_vars))
+
+plot_text_size_ <- 10
 
 df_barcode_source <- merge(
   read.csv(file.path(runs_paths$stock, 'stock_barcodes_filtered.csv')),
@@ -314,53 +382,70 @@ df_barcode_source <- df_barcode_source %>%
   dplyr::select(barcode, standard_barcode_name, biological_group) %>%
   dplyr::mutate(stock_source = ifelse(stringr::str_detect(standard_barcode_name, 'stock'), 'stock', biological_group))
 
+
+unique_stock_names <- base::unique(df_barcode_source$stock_source)
+unique_stock_names <- unique_stock_names[!is.na(unique_stock_names)]
+unique_stock_names <- unique_stock_names[!unique_stock_names=='stock']
+unique_stock_names <- base::unique(c('stock_overlap', 'experimental', unique_stock_names))
+num_unique_stocks <- length(unique_stock_names)
+instock_fill_colors <- c('orange', 'lightblue', RColorBrewer::brewer.pal(n = 8, name = 'Set3'))[1:num_unique_stocks]
+names(instock_fill_colors) <- unique_stock_names
+
+
+barcode_stock_source <- list()
+
+# if (10 > 1) {
 if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_filtered.csv'))$biological_group)) > 1) {
-  
-  for (biological_group_ in base::unique(df_record$biological_group)) {break}
-  
+
+  for (biological_group_ in base::unique(df_record$biological_group)) {
+
     df_bg <- do.call(rbind, lapply(Sys.glob(file.path(runs_paths$experimental, paste0(biological_group_, '*_processed.csv'))), function(file_) {
       df_sample <- read.csv(file_) %>%
         dplyr::mutate(standard_sample_name = stringr::str_replace(basename(file_), '_processed.csv', ''))
-  
+
       return(df_sample)
     })
     )
-    
+
     df_plot <- merge(df_bg, df_record, by = 'standard_sample_name')
-    
+
     df_plot <- merge(df_plot, df_barcode_source, by = 'barcode', all.x = TRUE)
-    
-    df_plot <- df_plot %>% 
+
+    df_plot <- df_plot %>%
       dplyr::mutate(
         stock_source = dplyr::case_when(
           stringr::str_detect(standard_barcode_name, 'stock') ~ 'stock_overlap',
           stringr::str_detect(standard_barcode_name, 'experimental') ~ 'experimental',
           TRUE ~ stock_source
         ))
-  
+
     df_plot <- df_plot %>%
       dplyr::arrange(time_point) %>%
       dplyr::filter(trusted_proportion > 0)
-    
+
     df_plot <- get_unique_experimental_treatments(df_plot)
-  
-    num_unique_stocks <- length(base::unique(df_plot$stock_source))
-    instock_fill_colors <- c('orange', 'lightblue', RColorBrewer::brewer.pal(n = 8, name = 'Set3'))[1:num_unique_stocks]
-    names(instock_fill_colors) <- c(c('experimental', 'stock_overlap'), base::unique(df_plot$stock_source)[!base::unique(df_plot$stock_source) %in% c('experimental', 'stock_overlap')])
-    
+
+    # unique_stock_names <- base::unique(df_plot$stock_source)
+    # unique_stock_names <- base::unique(c('stock_overlap', 'experimental', unique_stock_names))
+    # num_unique_stocks <- length(unique_stock_names)
+    # instock_fill_colors <- c('orange', 'lightblue', RColorBrewer::brewer.pal(n = 8, name = 'Set3'))[1:num_unique_stocks]
+    # names(instock_fill_colors) <- unique_stock_names
+
     plot_theme_ <- function(){
       theme_classic() +
       theme(
-        strip.text = element_text(size = 15),
-        axis.text.y = element_text(size = 15),
-        axis.title.y = element_text(size = 15),
+        text = element_text(size = plot_text_size_),
+        # strip.text = element_text(size = plot_text_size_),
+        # axis.text.y = element_text(size = plot_text_size_),
+        # axis.title.y = element_text(size = plot_text_size_),
         axis.text.x = element_blank(),
         axis.title.x = element_blank(),
-        plot.title = element_text(size = 15),
-        legend.position = 'bottom'
+        # plot.title = element_text(size = plot_text_size_),
+        legend.position = 'bottom',
+        legend.title=element_blank()
       )
     }
-  
+
     p1 <- ggplot(df_plot,
            aes(x = standard_sample_name, y = trusted_proportion, fill = stock_source)) +
       ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') +
@@ -371,7 +456,7 @@ if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_fil
       labs(fill = 'source', y = 'proportion') +
       scale_fill_manual(values = instock_fill_colors) +
       ggtitle(label = paste(biological_group_, 'proportion barcodes'))
-  
+
     p2 <- ggplot(df_plot,
            aes(x = standard_sample_name, y = total, fill = stock_source)) +
       ggh4x::facet_nested(. ~ time_point + cell_type + organ + genetic_source, scales = 'free', space = 'free') +
@@ -382,7 +467,7 @@ if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_fil
       labs(fill = 'source', y = 'count') +
       scale_fill_manual(values = instock_fill_colors) +
       ggtitle(label = paste(biological_group_, 'total barcodes'))
-  
+
     p3 <- ggplot(df_plot %>%
              dplyr::mutate(total = 1),
            aes(x = standard_sample_name, y = total, fill = stock_source)) +
@@ -394,15 +479,61 @@ if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_fil
       labs(fill = 'source', y = 'count') +
       scale_fill_manual(values = instock_fill_colors) +
       ggtitle(label = paste(biological_group_, 'unique barcodes'))
-  
+
     print(p1)
-  
+
     print(p2)
-  
+
     print(p3)
+    
+    df_stock_source_summary <- df_plot %>%
+      dplyr::group_by(standard_sample_name, stock_source) %>%
+      dplyr::mutate(
+        unique_barcodes = dplyr::n(),
+        total_barcodes = sum(total)
+        ) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(standard_sample_name, biological_group.x, cell_type, organ, time_point, stock_source, unique_barcodes, total_barcodes) %>%
+      base::unique() %>%
+      dplyr::rename(biological_group = biological_group.x) %>%
+      tidyr::pivot_wider(names_from = 'stock_source', values_from = c('unique_barcodes', 'total_barcodes'), values_fill = 0)
+    
+    df_stock_source_long <- df_plot %>%
+      dplyr::rename(biological_group = biological_group.x) %>%
+      dplyr::select(-biological_group.y)
+    
+    barcode_stock_source[[biological_group_]] <- list(
+      'summarized_source' = df_stock_source_summary,
+      'detailed_source' = df_stock_source_long
+    )
+
+  }
   
-} else {
+  # writing csv files with data used to make above graphs
+  
+  df_source_summary <- data.frame()
+  for (f in names(barcode_stock_source)) {
+    df_source_summary <- dplyr::bind_rows(
+      df_source_summary,
+      barcode_stock_source[[f]]$summarized_source
+      )
+  }
+  
+  write.csv(df_source_summary, file.path(runs_paths$base, 'output', 'experimental_barcode_source_summary.csv'), row.names = FALSE)
+  rm(df_source_summary)
+  
+  df_source_detailed <- data.frame()
+  for (f in names(barcode_stock_source)) {
+    df_source_detailed <- dplyr::bind_rows(
+      df_source_detailed,
+      barcode_stock_source[[f]]$detailed_source
+      )
+  }
+  write.csv(df_source_detailed, file.path(runs_paths$base, 'output', 'experimental_barcode_source_detailed.csv'), row.names = FALSE)
+  rm(df_source_detailed)
+  
+  } else {
   print('Only one stock source used. This section will not be processed.')
-}
+    }
 
 ```

@@ -4,7 +4,7 @@ cd /data/bar_lab/Bartender
 
 coverage -m pytest -sv  tests/end_to_end/test_ete2.py::test_run1_and_run2_run3_run4
 
-coverage run -m pytest -sv tests/test_*.py && coverage report -m
+coverage run -m pytest -sv tests/unit/test_*.py && coverage report -m
 
 python -m slipcover -m pytest -sv  tests/end_to_end/test_ete2.py::test_run1_and_run2_run3_run4
 

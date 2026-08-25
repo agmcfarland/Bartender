@@ -3,8 +3,8 @@ import pandas as pd
 import re
 import os
 from unittest.mock import patch, call
-from Utils.FilePaths import FilePaths
-from Utils.Record import Record
+from Bartender.Utils.FilePaths import FilePaths
+from Bartender.Utils.Record import Record
 
 
 @pytest.fixture

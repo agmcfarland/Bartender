@@ -38,41 +38,42 @@ library(cowplot)
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_2_0/bartender_output')
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/2_bnab_at_arti_animal_samples_stock')
 # run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/bartender_run_stock_and_experimental')
-# run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/bartender_run_stock_and_experimental_group1_and_group2')
-# 
-# runs_paths <- data.frame(
-#   'base' = run_dir,
-#   'record' = file.path(run_dir, 'record', 'experimental.csv'),
-#   'filtered_stock' = file.path(run_dir, 'stock', 'stock_barcodes_filtered.csv'),
-#   'raw_stock' = file.path(run_dir, 'stock', 'stock_barcodes_raw.csv'),
-#   'experimental' = file.path(run_dir, 'experimental'),
-#   'stock' = file.path(run_dir, 'stock'),
-#   'standard_barcode_names' = file.path(run_dir, 'output', 'standard_barcode_names.csv')
-# )
-# dynamic_figure_manager <- data.frame(
-#   experimental_trend_width = as.numeric(15),
-#   experimental_trend_height = as.numeric(15),
-#   per_experimental_group_width = as.numeric(15),
-#   per_experimental_group_height = as.numeric(15)
-# )
-### Troubleshooting inputs end
-
-dynamic_figure_manager <- data.frame(
-  experimental_trend_width = as.numeric(params$experimental_trend_width),
-  experimental_trend_height = as.numeric(params$experimental_trend_height),
-  per_experimental_group_width = as.numeric(params$per_experimental_group_width),
-  per_experimental_group_height = as.numeric(params$per_experimental_group_height)
-)
+# run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-shiv_d_crispr/1_3-test_pipeline/animal_characterization_vs_shivd')
+run_dir <- data.frame(run_dir = '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-shiv_d_crispr/1_4-test_pipeline/animal_characterization_vs_shivd')
 
 runs_paths <- data.frame(
-  'base' = params$run_dir,
-  'record' = file.path(params$run_dir, 'record', 'experimental.csv'),
-  'filtered_stock' = file.path(params$run_dir, 'stock', 'stock_barcodes_filtered.csv'),
-  'raw_stock' = file.path(params$run_dir, 'stock', 'stock_barcodes_raw.csv'),
-  'experimental' = file.path(params$run_dir, 'experimental'),
-  'stock' = file.path(params$run_dir, 'stock'),
-  'standard_barcode_names' = file.path(params$run_dir, 'output', 'standard_barcode_names.csv')
+  'base' = run_dir,
+  'record' = file.path(run_dir, 'record', 'experimental.csv'),
+  'filtered_stock' = file.path(run_dir, 'stock', 'stock_barcodes_filtered.csv'),
+  'raw_stock' = file.path(run_dir, 'stock', 'stock_barcodes_raw.csv'),
+  'experimental' = file.path(run_dir, 'experimental'),
+  'stock' = file.path(run_dir, 'stock'),
+  'standard_barcode_names' = file.path(run_dir, 'output', 'standard_barcode_names.csv')
 )
+dynamic_figure_manager <- data.frame(
+  experimental_trend_width = as.numeric(15),
+  experimental_trend_height = as.numeric(15),
+  per_experimental_group_width = as.numeric(15),
+  per_experimental_group_height = as.numeric(15)
+)
+### Troubleshooting inputs end
+
+# dynamic_figure_manager <- data.frame(
+#   experimental_trend_width = as.numeric(params$experimental_trend_width),
+#   experimental_trend_height = as.numeric(params$experimental_trend_height),
+#   per_experimental_group_width = as.numeric(params$per_experimental_group_width),
+#   per_experimental_group_height = as.numeric(params$per_experimental_group_height)
+# )
+# 
+# runs_paths <- data.frame(
+#   'base' = params$run_dir,
+#   'record' = file.path(params$run_dir, 'record', 'experimental.csv'),
+#   'filtered_stock' = file.path(params$run_dir, 'stock', 'stock_barcodes_filtered.csv'),
+#   'raw_stock' = file.path(params$run_dir, 'stock', 'stock_barcodes_raw.csv'),
+#   'experimental' = file.path(params$run_dir, 'experimental'),
+#   'stock' = file.path(params$run_dir, 'stock'),
+#   'standard_barcode_names' = file.path(params$run_dir, 'output', 'standard_barcode_names.csv')
+# )
 
 df_record <- read.csv(file.path(runs_paths$record)) %>%
   dplyr::select(-c(R1, R2, sample_name, input_template)) %>%
@@ -128,6 +129,11 @@ format_thousands <- function(x, digits = 1) {
     }
   })
 }
+
+markdown_header <- function(hashes = '##', text) {
+  cat("\n\n", hashes, " ", text, "\n\n", sep = "")
+}
+
 
 
 
@@ -234,7 +240,7 @@ df_plot_text <- df_plot %>%
   #   ) %>%
   # 
   dplyr::mutate(
-    tile_label = ifelse(in_stock == TRUE, paste(100 * round(trusted_proportion, 2), '\n', format_thousands(unique, 0), '|', format_thousands(total, 0)), paste(format_thousands(unique, 0), '|', format_thousands(total, 0)))
+    tile_label = ifelse(in_stock == TRUE, paste0(paste0(100 * round(trusted_proportion, 2),'%'), '\n', format_thousands(unique, 0), '|', format_thousands(total, 0)), paste0(format_thousands(unique, 0), '|', format_thousands(total, 0)))
     ) %>%
   dplyr::group_by(standard_sample_name) %>%
   dplyr::arrange(dplyr::desc(in_stock)) %>%
@@ -273,6 +279,437 @@ fig_height_ <- p1$data %>% dplyr::select(biological_group) %>%
 fig_height_ <- (fig_height_/1.5)+5 #sapply(seq(1, 50), function(x) {(x /1.5) + 5})
 
 subchunkify(p1, fig_width = fig_width_, fig_height = fig_height_)
+
+```
+
+# Barcode size distribution
+
+```{r}
+
+df_bg <- do.call(dplyr::bind_rows, lapply(Sys.glob(file.path(runs_paths$experimental, '*_barcode.csv')), function(file_) {
+  df_sample <- read.csv(file_)
+    # print(file.exists(file_))
+    # dplyr::mutate(standard_sample_name = stringr::str_replace(basename(file_), '_barcode.csv', ''))
+  }
+  )
+  ) %>%
+  tidyr::pivot_longer(names_to = 'standard_sample_name', values_to = 'count', cols = -barcode) %>%
+  dplyr::mutate(
+    standard_sample_name = gsub("_[^_]*$", "", standard_sample_name),
+    barcode_length = nchar(barcode)
+    ) %>%
+  dplyr::filter(!is.na(count)) %>%
+  dplyr::group_by(barcode) %>%
+  dplyr::mutate(samples_obs = dplyr::n_distinct(standard_sample_name)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(standard_sample_name) %>%
+  dplyr::mutate(
+    total_bc = sum(count)
+  ) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(standard_sample_name, barcode) %>%
+  dplyr::mutate(barcode_percentage = 100 * (count/total_bc)) %>%
+  dplyr::ungroup()
+
+df_barcode_source <- read.csv(file.path(runs_paths$stock, 'stock_barcodes_filtered.csv'))
+
+df_barcode_source_raw <- read.csv(file.path(runs_paths$stock, 'stock_barcodes_raw.csv'))
+
+df_v2_stock <- read.csv(
+  file.path(
+    '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/4_1-cd4_source_troubleshooting/bartender_mixed_stock/stock',
+    'stock_barcodes_raw.csv'
+    )
+  )
+
+df_subset <- df_bg %>%
+  dplyr::filter(barcode_length > 30 & barcode_length < 40) %>%
+  dplyr::left_join(
+    df_record, 
+    by = 'standard_sample_name'
+  ) %>%
+  dplyr::left_join(
+    df_barcode_source %>%
+      dplyr::select(biological_group, barcode) %>%
+      dplyr::rename(stock_id = biological_group),
+    by = 'barcode', 
+  ) %>%
+  dplyr::mutate(
+    in_barcode_raw = barcode %in% df_barcode_source_raw$barcode,
+    in_v2_barcode_raw = barcode %in% df_v2_stock$barcode
+  )
+
+df_plot <- df_subset %>%
+  dplyr::group_by(standard_sample_name, barcode_length) %>%
+  dplyr::mutate(total_percentage_at_length = sum(barcode_percentage)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(standard_sample_name, barcode_length, total_percentage_at_length) %>%
+  dplyr::distinct() %>%
+  dplyr::left_join(
+    df_record,
+    by = 'standard_sample_name'
+  )
+
+colors <- c(
+  "#EE6677", # 30
+  "#66CCEE",
+  "#228833",
+  "#CCBB44",
+  "#EE6677",
+  "#4477AA",
+  "#BBBBBB",
+  "#000000",
+  "#44AA99",
+  "#EE8866"
+)
+
+bc_fill <- colors
+names(bc_fill) <- as.character(seq(30, 39, by = 1))
+
+# whats the summed proportion of barcodes by length
+ggplot(df_plot, aes(fill = as.factor(barcode_length), y = total_percentage_at_length, x = standard_sample_name)) +
+  ggh4x::facet_nested(. ~ cell_type + biological_group + organ, scales = 'free', space = 'free', switch = 'y') +
+  geom_bar(stat = 'identity', position = position_stack()) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 5)
+  ) +
+  scale_fill_manual(values = bc_fill) +
+  labs(fill = 'bc len')
+
+
+df_bc_dom <- tibble::tribble(
+  ~standard_sample_name, ~barcode_dominance,
+  "DO52_CD4_0_SM_DNA", "34_dom",
+  "DP55_CD4_0_SM_DNA", "34_dom",
+  "DO58_CD4_0_SM_DNA", "34_dom",
+  "DP12_CD4_0_SM_DNA", "34_dom",
+  "DR30_CD4_0_SM_DNA", "34_dom",
+  "DM58_CD4_0_SM_DNA", "34_dom",
+  "DP66_MACROPHAGE_0_SM_DNA", "34_dom",
+  
+  
+  "DO60_MACROPHAGE_0_SM_DNA", "35_dom",
+  "MD86_CD4_0_NB_DNA", "35_dom",
+  "KH22_CD4_0_NB_DNA", "35_dom",
+  "ML02_CD4_0_SM_DNA", "35_dom",
+  "DO52_MACROPHAGE_0_SM_DNA", "35_dom",
+  "ML02_CD4_0_NB_DNA", "35_dom",
+  
+  "Not_Specified_CD4_0_not_applicable_DNA", "other"
+  )
+
+
+
+
+  
+for (i_ in c(34, 35)) {  
+  # i_ <- 34
+  
+  # sum of the five largest barcodes of size 34 and 35  
+  df_plot <- df_subset %>%
+    dplyr::filter(barcode_length == i_) %>%
+    dplyr::group_by(standard_sample_name, barcode_length) %>%
+    dplyr::slice_max(order_by = barcode_percentage, n = 5) %>%
+    dplyr::arrange(dplyr::desc(barcode_percentage)) %>%
+    dplyr::mutate(barcode_order = seq(1, dplyr::n())) %>%
+    dplyr::ungroup() %>%
+    dplyr::left_join(
+      df_bc_dom,
+      by = 'standard_sample_name'
+    ) %>%
+    dplyr::mutate(standard_sample_name = factor(standard_sample_name, levels = df_bc_dom$standard_sample_name))
+  
+  p1 <- ggplot(df_plot, aes(color = standard_sample_name, y = barcode_percentage, x = barcode_order)) +
+    ggh4x::facet_nested(barcode_dominance ~ ., scales = 'free', space = 'fixed') +
+    geom_line() +
+    geom_point() +
+    theme_light() +
+    theme(
+      axis.text.x = element_text(size = 10)
+    ) +
+    labs(title = paste0('top 5 BC of length ', i_))
+  
+  print(p1)
+  
+  # total numbers of barcodes
+  df_plot <- df_subset %>%
+    dplyr::filter(barcode_length == i_) %>%
+    dplyr::group_by(standard_sample_name) %>%
+    dplyr::mutate(total_bc_of_len = dplyr::n_distinct(barcode)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(standard_sample_name, total_bc_of_len) %>%
+    dplyr::distinct() %>%
+    dplyr::left_join(
+      df_bc_dom,
+      by = 'standard_sample_name'
+    ) %>%
+    dplyr::mutate(standard_sample_name = factor(standard_sample_name, levels = df_bc_dom$standard_sample_name))
+  
+  p2 <- ggplot(df_plot, aes(y = standard_sample_name, x = total_bc_of_len, fill = standard_sample_name)) +
+    ggh4x::facet_nested(barcode_dominance ~ ., scales = 'free', space = 'fixed') +
+    geom_bar(stat = 'identity') +
+    theme_light() +
+    theme(
+      axis.text.x = element_text(size = 10),
+      axis.text.y = element_text(size = 10),
+      legend.position = 'none',
+      axis.title.y = element_blank()
+    ) +
+    labs(title = paste0('Number unique barcodes of length ', i_))
+  
+  print(p2)
+  
+  # total numbers of barcodes split by found in SHIV D stock raw
+  df_plot <- df_subset %>%
+    dplyr::filter(barcode_length == i_) %>%
+    dplyr::mutate(
+      barcode_source = dplyr::case_when(
+        (in_barcode_raw == T & in_v2_barcode_raw == T) ~ 'both',
+        (in_barcode_raw == T & in_v2_barcode_raw == F) ~ 'SHIVD',
+        (in_barcode_raw == F & in_v2_barcode_raw == T) ~ 'V2',
+        (in_barcode_raw == F & in_v2_barcode_raw == F) ~ 'neither',
+        TRUE ~ 'lookatme'
+      )
+    ) %>%
+    dplyr::group_by(standard_sample_name, barcode_source) %>%
+    dplyr::mutate(total_bc_of_len = dplyr::n_distinct(barcode)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(standard_sample_name, total_bc_of_len, barcode_source) %>%
+    dplyr::distinct() %>%
+    dplyr::left_join(
+      df_bc_dom,
+      by = 'standard_sample_name'
+    ) %>%
+    dplyr::mutate(
+      standard_sample_name = factor(standard_sample_name, levels = df_bc_dom$standard_sample_name),
+      barcode_source = factor(
+        barcode_source,
+        levels = c('both', 'SHIVD', 'V2', 'neither')
+      )
+      )
+  
+  p3 <- ggplot(df_plot, aes(y = standard_sample_name, x = total_bc_of_len, fill = barcode_source)) +
+    ggh4x::facet_nested(barcode_dominance ~ ., scales = 'free', space = 'fixed') +
+    geom_bar(stat = 'identity') +
+    theme_light() +
+    theme(
+      axis.text.x = element_text(size = 10),
+      axis.text.y = element_text(size = 10),
+      legend.position = 'bottom',
+      axis.title.y = element_blank()
+    ) +
+    labs(title = paste0('Number unique barcodes of length ', i_)) +
+    scale_fill_brewer(palette = 'Set2') +
+    guides(fill = guide_legend(reverse = T))
+  
+  print(p3)
+   
+  }
+
+
+
+    
+
+```
+
+
+# Shivd cns Barcode size distribution
+
+```{r}
+
+shivd_cns_path <- '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-SHIV_D_CNS/bartender_run_stock_and_experimental_3'
+
+shivd_cns_record <- read.csv(file.path(shivd_cns_path, 'record', 'experimental.csv')) %>%
+  dplyr::filter((cell_type == 'CD4_T_CELL' & organ == 'PBMC') | (cell_type == 'MACROPHAGE' & organ == 'PBMC') |
+                  (cell_type == 'PLASMA' & time_point == 7 & organ == 'BLOOD')) %>%
+  dplyr::select(-c(sample_name, R1, R2, input_template)) %>%
+  dplyr::distinct()
+
+df_barcode_source <- read.csv(file.path(runs_paths$stock, 'stock_barcodes_filtered.csv'))
+
+df_barcode_source_raw <- read.csv(file.path(runs_paths$stock, 'stock_barcodes_raw.csv'))
+
+df_v2_stock <- read.csv(
+  file.path(
+    '/data/bar_lab/small_scale_barcode_analyses/data/interim/1-bnab_at_arti/4_1-cd4_source_troubleshooting/bartender_mixed_stock/stock',
+    'stock_barcodes_raw.csv'
+    )
+  )
+
+df_bg <- do.call(dplyr::bind_rows, lapply(Sys.glob(file.path(shivd_cns_path, 'experimental', paste0(shivd_cns_record$standard_sample_name, '_barcode.csv'))), function(file_) {
+  df_sample <- read.csv(file_)
+    # print(file.exists(file_))
+    # dplyr::mutate(standard_sample_name = stringr::str_replace(basename(file_), '_barcode.csv', ''))
+  }
+  )
+  ) %>%
+  tidyr::pivot_longer(names_to = 'standard_sample_name', values_to = 'count', cols = -barcode) %>%
+  dplyr::mutate(
+    standard_sample_name = gsub("_[^_]*$", "", standard_sample_name),
+    barcode_length = nchar(barcode)
+    ) %>%
+  dplyr::filter(!is.na(count)) %>%
+  dplyr::group_by(barcode) %>%
+  dplyr::mutate(samples_obs = dplyr::n_distinct(standard_sample_name)) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(standard_sample_name) %>%
+  dplyr::mutate(
+    total_bc = sum(count)
+  ) %>%
+  dplyr::ungroup() %>%
+  dplyr::group_by(standard_sample_name, barcode) %>%
+  dplyr::mutate(barcode_percentage = 100 * (count/total_bc)) %>%
+  dplyr::ungroup()
+
+
+
+colors <- c(
+  "#EE6677", # 30
+  "#66CCEE",
+  "#228833",
+  "#CCBB44",
+  "#EE6677",
+  "#4477AA",
+  "#BBBBBB",
+  "#000000",
+  "#44AA99",
+  "#EE8866"
+)
+
+bc_fill <- colors
+names(bc_fill) <- as.character(seq(30, 39, by = 1))
+
+for (cell_type_ in c('PLASMA', 'MACROPHAGE', 'CD4_T_CELL')) {
+  
+  df_subset <- df_bg %>%
+    dplyr::filter(barcode_length > 30 & barcode_length < 40) %>%
+    dplyr::left_join(
+      shivd_cns_record, 
+      by = 'standard_sample_name'
+    ) %>%
+    dplyr::filter(cell_type == cell_type_) %>%
+    dplyr::mutate(
+      in_barcode_raw = barcode %in% df_barcode_source_raw$barcode,
+      in_v2_barcode_raw = barcode %in% df_v2_stock$barcode
+    )
+  
+  df_plot <- df_subset %>%
+    dplyr::group_by(standard_sample_name, barcode_length) %>%
+    dplyr::mutate(total_percentage_at_length = sum(barcode_percentage)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(standard_sample_name, barcode_length, total_percentage_at_length) %>%
+    dplyr::distinct() %>%
+    dplyr::left_join(
+      shivd_cns_record,
+      by = 'standard_sample_name'
+    )
+
+  # whats the summed proportion of barcodes by length
+  p1 <- ggplot(df_plot, aes(fill = as.factor(barcode_length), y = total_percentage_at_length, x = standard_sample_name)) +
+    ggh4x::facet_nested(. ~ cell_type + biological_group + organ, scales = 'free', space = 'free', switch = 'y') +
+    geom_bar(stat = 'identity', position = position_stack()) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 5)
+    ) +
+    scale_fill_manual(values = bc_fill) +
+    labs(fill = 'bc len', title = paste0('Cell type: ', cell_type_))
+  
+  print(p1)
+
+
+  
+  # TBD
+  df_bc_dom <- df_plot %>%
+    dplyr::filter(barcode_length %in% c(34, 35)) %>%
+    dplyr::group_by(standard_sample_name) %>%
+    dplyr::slice_max(order_by = total_percentage_at_length, with_ties = F) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      barcode_dominance = ifelse(barcode_length == 34, '34_dom', '35_dom')
+    )
+  
+  
+  for (i_ in c(34, 35)) {  
+    # i_ <- 34
+    
+    # sum of the five largest barcodes of size 34 and 35  
+    df_plot <- df_subset %>%
+      dplyr::filter(barcode_length == i_) %>%
+      dplyr::group_by(standard_sample_name, barcode_length) %>%
+      dplyr::slice_max(order_by = barcode_percentage, n = 5) %>%
+      dplyr::arrange(dplyr::desc(barcode_percentage)) %>%
+      dplyr::mutate(barcode_order = seq(1, dplyr::n())) %>%
+      dplyr::ungroup() %>%
+      dplyr::left_join(
+        df_bc_dom,
+        by = 'standard_sample_name'
+      ) %>%
+      dplyr::mutate(standard_sample_name = factor(standard_sample_name, levels = df_bc_dom$standard_sample_name))
+    
+    p1 <- ggplot(df_plot, aes(color = standard_sample_name, y = barcode_percentage, x = barcode_order)) +
+      ggh4x::facet_nested(barcode_dominance ~ ., scales = 'free', space = 'fixed') +
+      geom_line() +
+      geom_point() +
+      theme_light() +
+      theme(
+        axis.text.x = element_text(size = 10)
+      ) +
+      labs(title = paste0('Cell type: ', cell_type_, '\nTop 5 BC of length ', i_))
+    
+    print(p1)
+    
+    # total numbers of barcodes split by found in SHIV D stock raw
+    df_plot <- df_subset %>%
+      dplyr::filter(barcode_length == i_) %>%
+      dplyr::mutate(
+        barcode_source = dplyr::case_when(
+          (in_barcode_raw == T & in_v2_barcode_raw == T) ~ 'both',
+          (in_barcode_raw == T & in_v2_barcode_raw == F) ~ 'SHIVD',
+          (in_barcode_raw == F & in_v2_barcode_raw == T) ~ 'V2',
+          (in_barcode_raw == F & in_v2_barcode_raw == F) ~ 'neither',
+          TRUE ~ 'lookatme'
+        )
+      ) %>%
+      dplyr::group_by(standard_sample_name, barcode_source) %>%
+      dplyr::mutate(total_bc_of_len = dplyr::n_distinct(barcode)) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(standard_sample_name, total_bc_of_len, barcode_source) %>%
+      dplyr::distinct() %>%
+      dplyr::left_join(
+        df_bc_dom,
+        by = 'standard_sample_name'
+      ) %>%
+      dplyr::mutate(
+        standard_sample_name = factor(standard_sample_name, levels = df_bc_dom$standard_sample_name),
+        barcode_source = factor(
+          barcode_source,
+          levels = c('both', 'SHIVD', 'V2', 'neither')
+        )
+        )
+    
+    p3 <- ggplot(df_plot, aes(y = standard_sample_name, x = total_bc_of_len, fill = barcode_source)) +
+      ggh4x::facet_nested(barcode_dominance ~ ., scales = 'free', space = 'fixed') +
+      geom_bar(stat = 'identity') +
+      theme_light() +
+      theme(
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        legend.position = 'bottom',
+        axis.title.y = element_blank()
+      ) +
+      labs(title = paste0('Cell type: ', cell_type_, '\nNumber unique barcodes of length ', i_)) +
+      scale_fill_brewer(palette = 'Set2') +
+      guides(fill = guide_legend(reverse = T))
+    
+    print(p3)
+     
+  }
+  
+  }
+
+
+
+    
 
 ```
 
@@ -367,7 +804,8 @@ subchunkify(p1, fig_width = fig_width_, fig_height = fig_height_)
 
 This section shows proportion of barcodes, the number of unique barcodes, and the total abundance of barcodes for each biological group according to a more refined view of the stock sourcing. Here, barcodes are color coded by what specific stock they were found in. If a barcode is not found in any stock, they are labeled as "experimental". If they are found in two or more different stocks then they are labeled "stock overlap". Otherwise, they are labeled with the name of stock.
 
-```{r, per_experimental_group_specific_stock_source, message=FALSE, warning=FALSE, echo=FALSE,fig.align="center", fig.width=6, fig.height=6}
+<!--# ```{r, per_experimental_group_specific_stock_source, message=FALSE, warning=FALSE, echo=FALSE,fig.align="center", fig.width=6, fig.height=6}-->
+```{r, per_experimental_group_specific_stock_source, message=FALSE, warning=FALSE, echo=FALSE, results='asis'}
 rm(list = list_non_global_variables(ls(), keep_global_vars))
 
 plot_text_size_ <- 10
@@ -394,6 +832,7 @@ names(instock_fill_colors) <- unique_stock_names
 
 barcode_stock_source <- list()
 
+
 # if (10 > 1) {
 if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_filtered.csv'))$biological_group)) > 1) {
 
@@ -406,6 +845,10 @@ if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_fil
       return(df_sample)
     })
     )
+    
+    if (is.null(df_bg)) {
+      next
+    }
 
     df_plot <- merge(df_bg, df_record, by = 'standard_sample_name')
 
@@ -480,11 +923,13 @@ if (length(base::unique(read.csv(file.path(runs_paths$stock, 'stock_barcodes_fil
       scale_fill_manual(values = instock_fill_colors) +
       ggtitle(label = paste(biological_group_, 'unique barcodes'))
 
-    print(p1)
+    markdown_header('##', biological_group_)
+    
+    subchunkify(p1, fig_width = 6, fig_height = 6)
 
-    print(p2)
+    subchunkify(p2, fig_width = 6, fig_height = 6)
 
-    print(p3)
+    subchunkify(p3, fig_width = 6, fig_height = 6)
     
     df_stock_source_summary <- df_plot %>%
       dplyr::group_by(standard_sample_name, stock_source) %>%

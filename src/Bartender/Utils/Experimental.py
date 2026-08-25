@@ -5,7 +5,7 @@ import pandas as pd
 import random
 import time
 from math import isnan
-from Utils.Common import hamming_distance_preset_length, hamming_distance_array
+from Bartender.Utils.Common import hamming_distance_preset_length, hamming_distance_array
 
 
 class Experimental:
@@ -199,11 +199,6 @@ class Experimental:
             return df
 
         # get best hamming match for each experimental barcode
-        # each barcode is searched against all other barcodes from a single experimental sample and the stock
-        # it gets the closest matching barcode (lowest hamming distance)
-        # if the best match is to stock, then PCR error check will be not applicable
-        # other wise it will compare the percentage size of one hamming variant
-        # to another for the PCR error check
         barcode_distances = self._get_best_hamming_match(
             df_experimental=df,
             barcodes1_list=df["barcode"].tolist(),

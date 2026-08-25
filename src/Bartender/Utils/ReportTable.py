@@ -3,8 +3,8 @@ import os
 import pandas as pd
 import re
 from glob import glob
-from Utils.SetupManager import SetupManager
-from Utils.Common import find_subtring_match
+from Bartender.Utils.SetupManager import SetupManager
+from Bartender.Utils.Common import find_subtring_match
 
 
 class ReportTable:
@@ -38,117 +38,75 @@ class ReportTable:
         )
 
     def proportion_and_count_summary(self):
+
         self._read_in_experimental_samples()
 
         self._map_standard_barcode_names_to_barcodes()
 
         unique_stock_ids = self.setup_manager.record.unique_stock_biological_groups()
 
-        unique_stock_ids.append("stock")
+        unique_stock_ids.append('stock')
 
-        unique_stock_ids.append("experimental")
+        unique_stock_ids.append('experimental')
 
         unique_stock_ids_regex = [re.compile(stock_id) for stock_id in unique_stock_ids]
 
-        self.experimental_table["stock_source"] = self.experimental_table[
-            "standard_barcode_name"
-        ].apply(lambda x: find_subtring_match(x, unique_stock_ids_regex))
+        self.experimental_table['stock_source'] = self.experimental_table['standard_barcode_name'].apply(lambda x: find_subtring_match(x, unique_stock_ids_regex))
 
-        self.experimental_table = self.experimental_table[
-            self.experimental_table["trusted_proportion"] > 0
-        ]
+        self.experimental_table = self.experimental_table[self.experimental_table['trusted_proportion'] > 0]
 
-        self.experimental_summary_table_counts = self._experimental_summary_table(
-            proportion=False
-        )
+        self.experimental_summary_table_counts = self._experimental_summary_table(proportion = False)
 
-        self.experimental_summary_table_proportions = self._experimental_summary_table(
-            proportion=True
-        )
+        self.experimental_summary_table_proportions = self._experimental_summary_table(proportion = True)
 
     def write_proportion_and_count_summary(self):
-        self.experimental_summary_table_counts.to_csv(
-            pjoin(
-                self.setup_manager.run_paths.output, "experimental_summary_counts.csv"
-            ),
-            index=None,
-        )
-        self.experimental_summary_table_proportions.to_csv(
-            pjoin(
-                self.setup_manager.run_paths.output,
-                "experimental_summary_proportion.csv",
-            ),
-            index=None,
-        )
+        self.experimental_summary_table_counts.to_csv(pjoin(self.setup_manager.run_paths.output, 'experimental_summary_counts.csv'), index = None)
+        self.experimental_summary_table_proportions.to_csv(pjoin(self.setup_manager.run_paths.output, 'experimental_summary_proportion.csv'), index = None)
+
 
     def _experimental_summary_table(self, proportion: bool = False):
         """
         Create summary table at the level of each unique stock, experiment only, shared stock only, and total_sum
         """
 
-        summary = (
-            self.experimental_table.groupby(["file_tag", "stock_source"])["total"]
-            .sum()
-            .reset_index()
-        )
+        summary = self.experimental_table.groupby(['file_tag', 'stock_source'])['total'].sum().reset_index()
 
-        summary.rename(columns={"total": "total_sum"}, inplace=True)
+        summary.rename(columns={'total': 'total_sum'}, inplace=True)
 
-        summary = summary.pivot(
-            index="file_tag", columns="stock_source", values="total_sum"
-        ).reset_index()
+        summary = summary.pivot(index='file_tag', columns='stock_source', values='total_sum').reset_index()
 
         # Fill any NaN values with 0 if needed
         summary.fillna(0, inplace=True)
 
         summary.columns.name = None
 
-        stock_total = summary.loc[
-            :, ~summary.columns.isin(["file_tag", "experimental"])
-        ].sum(axis=1)
+        stock_total = summary.loc[:, ~summary.columns.isin(['file_tag', 'experimental'])].sum(axis=1)
 
-        summary["stock_total"] = stock_total
+        summary['stock_total'] = stock_total
 
-        all_total = summary.loc[
-            :, summary.columns.isin(["stock_total", "experimental"])
-        ].sum(axis=1)
+        all_total = summary.loc[:, summary.columns.isin(['stock_total', 'experimental'])].sum(axis=1)
 
-        summary["all_total"] = all_total
+        summary['all_total'] = all_total
 
-        summary = summary.rename(
-            columns={"stock": "shared_stock", "experimental": "experimental_only"}
-        )
+        summary = summary.rename(columns = {'stock': 'shared_stock', 'experimental': 'experimental_only'})
 
         if proportion:
-            columns_to_normalize = summary.columns.difference(["file_tag"])
 
-            summary[columns_to_normalize] = summary[columns_to_normalize].div(
-                summary["all_total"], axis=0
-            )
+            columns_to_normalize = summary.columns.difference(['file_tag'])
 
-        df_metadata = self.setup_manager.record.experimental[
-            [
-                "standard_sample_name",
-                "biological_group",
-                "cell_type",
-                "time_point",
-                "organ",
-                "genetic_source",
-            ]
-        ].drop_duplicates()
+            summary[columns_to_normalize] = summary[columns_to_normalize].div(summary['all_total'], axis=0)
 
-        summary = df_metadata.merge(
-            summary, left_on="standard_sample_name", right_on="file_tag"
-        )
+        df_metadata = self.setup_manager.record.experimental[['standard_sample_name', 'biological_group', 'cell_type', 'time_point', 'organ', 'genetic_source']].drop_duplicates()
 
-        summary = summary.sort_values(
-            ["biological_group", "time_point", "cell_type", "organ", "genetic_source"],
-            ascending=[True, True, False, True, False],
-        )
+        summary = df_metadata.merge(summary, left_on = 'standard_sample_name', right_on = 'file_tag')
 
-        summary = summary.drop(columns=["file_tag"])
+        summary = summary.sort_values(["biological_group", "time_point", "cell_type", "organ", "genetic_source"], ascending=[True, True, False, True, False])
+
+        summary = summary.drop(columns = ['file_tag'])
 
         return summary
+
+
 
     def _make_condensed_experimental_record(self, biological_group):
         """
@@ -193,38 +151,32 @@ class ReportTable:
         """
 
         for count_table in self.type_1_experiment_table_count:
+            
             # copy count table, ignore metadata rows
-            df_counts = count_table.copy(deep=True).loc[9:]
+            df_counts = count_table.copy(deep = True).loc[9:]
 
             # summed totals
-            column_sums = df_counts.loc[
-                :, ~df_counts.columns.isin(["standard_barcode_name", "barcode"])
-            ].sum()
+            column_sums = df_counts.loc[:, ~df_counts.columns.isin(['standard_barcode_name', 'barcode'])].sum()
             # column_sums = df_counts.iloc[:, 2:].sum()
 
             # each barcode divided by respective sumemd total
-            df_proportion = df_counts.loc[
-                :, ~df_counts.columns.isin(["standard_barcode_name", "barcode"])
-            ].div(column_sums, axis=1)
+            df_proportion = df_counts.loc[:, ~df_counts.columns.isin(['standard_barcode_name', 'barcode'])].div(column_sums, axis=1)
 
             # add the initial two columns back to the dataframe
-            df_proportion = pd.concat(
-                [df_counts[["standard_barcode_name", "barcode"]], df_proportion], axis=1
-            )
+            df_proportion = pd.concat([df_counts[['standard_barcode_name', 'barcode']], df_proportion], axis=1)
 
-            # get the metadata rows
+            # get the metadata rows 
             df_metadata = count_table.iloc[:9]
 
             # add the metadata back to the dataframe
-            df_combined = pd.concat(
-                [df_metadata, df_proportion], axis=0, ignore_index=True
-            )
+            df_combined = pd.concat([df_metadata, df_proportion], axis = 0, ignore_index = True)
 
             self.type_1_experiment_table_proportion.append(df_combined)
 
+
     def make_report_table_type_1_counts(self):
         """
-        Assigns self.type_1_experiment_table a list. Each item is a pandas dataframe
+        Assigns self.type_1_experiment_table a list. Each item is a pandas dataframe 
         in the type_1 format
         """
         pd.options.mode.chained_assignment = None
@@ -348,21 +300,15 @@ class ReportTable:
         Writes either count or proportion type 1 tables to excel
         """
         table_type = {
-            "count": {
-                "filename": "barcode_report_table_type_1_count.xlsx",
-                "data_list": self.type_1_experiment_table_count,
-            },
-            "proportion": {
-                "filename": "barcode_report_table_type_1_proportion.xlsx",
-                "data_list": self.type_1_experiment_table_proportion,
-            },
+            'count': {'filename': 'barcode_report_table_type_1_count.xlsx', 'data_list': self.type_1_experiment_table_count},
+            'proportion': {'filename': 'barcode_report_table_type_1_proportion.xlsx', 'data_list': self.type_1_experiment_table_proportion},
         }
 
         try:
             os.remove(
                 pjoin(
                     self.setup_manager.run_paths.output,
-                    table_type[table_to_process]["filename"],
+                    table_type[table_to_process]['filename'],
                 )
             )
         except:
@@ -370,13 +316,10 @@ class ReportTable:
 
         with pd.ExcelWriter(
             pjoin(
-                self.setup_manager.run_paths.output,
-                table_type[table_to_process]["filename"],
+                self.setup_manager.run_paths.output, table_type[table_to_process]['filename']
             )
         ) as writer:
-            for table in table_type[table_to_process][
-                "data_list"
-            ]:  # self.type_1_experiment_table:
+            for table in table_type[table_to_process]['data_list']: #self.type_1_experiment_table:
                 biological_group = table.iloc[0, 0]
 
                 table.to_excel(

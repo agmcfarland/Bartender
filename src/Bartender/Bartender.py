@@ -6,9 +6,9 @@ import re
 import shutil
 from os.path import join as pjoin
 from glob import glob
-from Utils.SetupManager import SetupManager
-from Utils.BarcodeProcessor import BarcodeProcessor
-from Utils.StandardBarcodeName import StandardBarcodeName
+from Bartender.Utils.SetupManager import SetupManager
+from Bartender.Utils.BarcodeProcessor import BarcodeProcessor
+from Bartender.Utils.StandardBarcodeName import StandardBarcodeName
 import time
 
 

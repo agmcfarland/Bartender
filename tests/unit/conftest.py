@@ -4,9 +4,9 @@ import re
 import os
 from os.path import join as pjoin
 from unittest.mock import patch, call
-from Utils.SetupManager import SetupManager
-from Utils.FilePaths import FilePaths
-from Utils.Record import Record
+from Bartender.Utils.SetupManager import SetupManager
+from Bartender.Utils.FilePaths import FilePaths
+from Bartender.Utils.Record import Record
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -1,10 +1,12 @@
 import re
-from Utils.Common import find_subtring_match
+from Bartender.Utils.Common import find_subtring_match
 
 
 def test_find_subtring_match():
     """
     python -m slipcover -m pytest -sv tests/unit/test_Common.py::test_find_subtring_match
+
+    python -m pytest -sv tests/unit/test_Common.py::test_find_subtring_match
     """
     test_subject = [re.compile(subj) for subj in ["alex", "kevin", "chris", "andrew"]]
 

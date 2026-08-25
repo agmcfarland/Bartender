@@ -4,10 +4,10 @@ import re
 import os
 import glob
 from unittest.mock import patch, call, Mock
-from Utils.SetupManager import SetupManager
-from Utils.FilePaths import FilePaths
-from Utils.Record import Record
-from Utils.StandardBarcodeName import StandardBarcodeName
+from Bartender.Utils.SetupManager import SetupManager
+from Bartender.Utils.FilePaths import FilePaths
+from Bartender.Utils.Record import Record
+from Bartender.Utils.StandardBarcodeName import StandardBarcodeName
 
 
 @pytest.fixture
@@ -186,10 +186,10 @@ def test_read_in_experimental_barcodes(mock_setup_manager, mock_experimental_bar
     with patch.object(
         mock_setup_manager.run_paths, "experimental", new="/path/to/experimental"
     ):
-        with patch("Utils.StandardBarcodeName.glob") as mock_glob:
-            with patch("Utils.StandardBarcodeName.pd.read_csv") as mock_csv:
+        with patch("Bartender.Utils.StandardBarcodeName.glob") as mock_glob:
+            with patch("Bartender.Utils.StandardBarcodeName.pd.read_csv") as mock_csv:
                 with patch(
-                    "Utils.StandardBarcodeName.os.path.basename"
+                    "Bartender.Utils.StandardBarcodeName.os.path.basename"
                 ) as mock_basename:
                     mock_basename.side_effect = [
                         "file1_processed.csv",
@@ -230,10 +230,10 @@ def test_assign_standard_barcode_names(
         with patch.object(
             mock_setup_manager.run_paths, "experimental", new="/path/to/experimental"
         ):
-            with patch("Utils.StandardBarcodeName.glob") as mock_glob:
-                with patch("Utils.StandardBarcodeName.pd.read_csv") as mock_csv:
+            with patch("Bartender.Utils.StandardBarcodeName.glob") as mock_glob:
+                with patch("Bartender.Utils.StandardBarcodeName.pd.read_csv") as mock_csv:
                     with patch(
-                        "Utils.StandardBarcodeName.os.path.basename"
+                        "Bartender.Utils.StandardBarcodeName.os.path.basename"
                     ) as mock_basename:
                         mock_basename.side_effect = [
                             "file1_processed.csv",

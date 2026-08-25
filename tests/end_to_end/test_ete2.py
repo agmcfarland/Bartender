@@ -4,8 +4,8 @@ import shutil
 from os.path import join as pjoin
 import os
 from unittest.mock import patch
-from Utils.SetupManager import SetupManager
-from Utils.BarcodeProcessor import BarcodeProcessor
+from Bartender.Utils.SetupManager import SetupManager
+from Bartender.Utils.BarcodeProcessor import BarcodeProcessor
 import time
 
 

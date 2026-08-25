@@ -99,3 +99,6 @@ sftp-config.json
 tests/data/ete2/full/
 
 /conda/
+*.png
+*.png
+*.png

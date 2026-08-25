@@ -1,6 +1,6 @@
 [project]
 name = "Bartender"
-version = "1.1.0"
+version = "1.2.0"
 description = "Finding barcodes in viruses"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -36,8 +36,11 @@ test = ["pytest", "pytest-cov"]
 "Source" = "https://github.com/agmcfarland/Bartender/"
 
 [project.scripts]
-Bartender = "Bartender:main"
-BartenderReport = "BartenderReport:main"
+Bartender = "Bartender.Bartender:main"
+BartenderReport = "Bartender.BartenderReport:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]

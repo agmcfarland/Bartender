@@ -5,10 +5,10 @@ import os
 import glob
 from os.path import join as pjoin
 from unittest.mock import patch, call, Mock, MagicMock
-from Utils.SetupManager import SetupManager
-from Utils.FilePaths import FilePaths
-from Utils.Record import Record
-from Utils.ReportTable import ReportTable
+from Bartender.Utils.SetupManager import SetupManager
+from Bartender.Utils.FilePaths import FilePaths
+from Bartender.Utils.Record import Record
+from Bartender.Utils.ReportTable import ReportTable
 
 
 @pytest.fixture
@@ -535,9 +535,9 @@ def test_read_in_experimental_samples(
         with patch.object(
             mock_setup_manager.run_paths, "experimental", new="/path/to/experimental"
         ):
-            with patch("Utils.ReportTable.glob") as mock_glob:
-                with patch("Utils.ReportTable.pd.read_csv") as mock_csv:
-                    with patch("Utils.ReportTable.os.path.basename") as mock_basename:
+            with patch("Bartender.Utils.ReportTable.glob") as mock_glob:
+                with patch("Bartender.Utils.ReportTable.pd.read_csv") as mock_csv:
+                    with patch("Bartender.Utils.ReportTable.os.path.basename") as mock_basename:
                         mock_glob.return_value = [
                             "bg1_plasma_7_not_specified_cdna_processed.csv",
                             "bg1_plasma_10_blood_vRNA_processed.csv",
@@ -580,9 +580,9 @@ def test_map_standard_barcode_names_to_barcodes(
         with patch.object(
             mock_setup_manager.run_paths, "experimental", new="/path/to/experimental"
         ):
-            with patch("Utils.ReportTable.glob") as mock_glob:
-                with patch("Utils.ReportTable.pd.read_csv") as mock_csv:
-                    with patch("Utils.ReportTable.os.path.basename") as mock_basename:
+            with patch("Bartender.Utils.ReportTable.glob") as mock_glob:
+                with patch("Bartender.Utils.ReportTable.pd.read_csv") as mock_csv:
+                    with patch("Bartender.Utils.ReportTable.os.path.basename") as mock_basename:
                         mock_glob.return_value = [
                             "bg1_plasma_7_not_specified_cdna_processed.csv",
                             "bg1_plasma_10_blood_vRNA_processed.csv",
@@ -629,9 +629,9 @@ def test_make_report_table_type_1(
         ):
             report_table.setup_manager.record.experimental = experimental_record
 
-            with patch("Utils.ReportTable.glob") as mock_glob:
-                with patch("Utils.ReportTable.pd.read_csv") as mock_csv:
-                    with patch("Utils.ReportTable.os.path.basename") as mock_basename:
+            with patch("Bartender.Utils.ReportTable.glob") as mock_glob:
+                with patch("Bartender.Utils.ReportTable.pd.read_csv") as mock_csv:
+                    with patch("Bartender.Utils.ReportTable.os.path.basename") as mock_basename:
                         mock_glob.return_value = [
                             "bg1_plasma_7_not_specified_cdna_processed.csv",
                             "bg1_plasma_10_blood_vRNA_processed.csv",
@@ -698,10 +698,10 @@ def test_proportion_and_count_summary(
         ):
             report_table.setup_manager.record.experimental = experimental_record
 
-            with patch("Utils.ReportTable.glob") as mock_glob:
-                with patch("Utils.ReportTable.pd.read_csv") as mock_csv:
+            with patch("Bartender.Utils.ReportTable.glob") as mock_glob:
+                with patch("Bartender.Utils.ReportTable.pd.read_csv") as mock_csv:
                     with patch(
-                        "Utils.ReportTable.os.path.basename"
+                        "Bartender.Utils.ReportTable.os.path.basename"
                     ) as mock_basename:  # necessary for _read_in_experimental_samples
                         mock_glob.return_value = [
                             "bg1_plasma_7_not_specified_cdna_processed.csv",
@@ -792,7 +792,7 @@ def report_table_instance(setup_manager_mock):
     return ReportTable(setup_manager_mock)
 
 
-@patch("Utils.ReportTable.pd.ExcelWriter")
+@patch("Bartender.Utils.ReportTable.pd.ExcelWriter")
 def test_write_report_table_type_1_to_excel_count(
     mock_excel_writer, report_table_instance
 ):
@@ -816,7 +816,7 @@ def test_write_report_table_type_1_to_excel_count(
     mock_table.to_excel.assert_called_once()
 
 
-@patch("Utils.ReportTable.pd.ExcelWriter")
+@patch("Bartender.Utils.ReportTable.pd.ExcelWriter")
 def test_write_report_table_type_1_to_excel_proportion(
     mock_excel_writer, report_table_instance
 ):

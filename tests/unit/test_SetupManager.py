@@ -3,14 +3,14 @@ import pandas as pd
 import re
 import os
 from unittest.mock import patch, call
-from Utils.SetupManager import SetupManager
-from Utils.FilePaths import FilePaths
-from Utils.Record import Record
+from Bartender.Utils.SetupManager import SetupManager
+from Bartender.Utils.FilePaths import FilePaths
+from Bartender.Utils.Record import Record
 
 
 @pytest.fixture
 def mock_os_makedirs():
-    with patch("Utils.FilePaths.os.makedirs") as mocked_makedirs:
+    with patch("Bartender.Utils.FilePaths.os.makedirs") as mocked_makedirs:
         mocked_makedirs.side_effect = [
             "/path/to/workdir",
             "/path/to/workdir/record",

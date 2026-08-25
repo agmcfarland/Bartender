@@ -5,8 +5,8 @@ from glob import glob
 import re
 import pandas as pd
 from unittest.mock import patch, Mock
-from Utils.SampleRead import SampleRead
-from Utils.Stock import Stock
+from Bartender.Utils.SampleRead import SampleRead
+from Bartender.Utils.Stock import Stock
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ def test_update_raw_stock_table(raw_barcode_tables, mock_setup_manager, test_dat
     """
     with patch("os.path.exists") as mock_path_exists:
         with patch("pandas.read_csv") as mock_read_csv:
-            with patch("Utils.Stock.glob") as mock_glob:
+            with patch("Bartender.Utils.Stock.glob") as mock_glob:
                 mock_path_exists.return_value = False
 
                 mock_read_csv.side_effect = raw_barcode_tables
